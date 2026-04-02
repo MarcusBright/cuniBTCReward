@@ -91,3 +91,12 @@ func TestCalcAvgAmount3(t *testing.T) {
 		t.Errorf("CalcAvgAmount returned %s, expected %s", actualAvgAmount.String(), expectedAvgAmount.String())
 	}
 }
+
+func TestGetAvgAmount(t *testing.T) {
+	c := NewCalulator("root:123456@tcp(127.0.0.1:3317)/cunibtcreward?charset=utf8mb4&parseTime=True&loc=Local", 560048)
+	r, err := c.GetAvgAmount(2528720, 2536408)
+	if err != nil {
+		t.Fatalf("GetAvgAmount returned error: %v", err)
+	}
+	t.Log(r)
+}
