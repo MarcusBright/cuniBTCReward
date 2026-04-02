@@ -23,7 +23,7 @@ func (sc *ScanCron) AddSpec(spec string, job cron.Job) (cron.EntryID, error) {
 }
 
 func (sc *ScanCron) Start() {
-	sc.Cron.Start()
+	sc.Cron.Run()
 }
 
 func (sc *ScanCron) StopContext() context.Context {

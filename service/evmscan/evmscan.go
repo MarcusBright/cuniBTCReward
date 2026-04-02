@@ -26,35 +26,45 @@ import (
 
 type Scanner struct {
 	database        *gorm.DB
-	config          *config.Config
-	evmClients      []*ethclient.Client
-	cuniBTCVault    *cunibtcvault.Cunibtcvault
+	config          *config.EvmScanConf
+	evmClients      []*EvmClient
 	cuniBTCVaultAbi *abi.ABI
-	redeemRouter    *delayredeemrouter.Delayredeemrouter
 	redeemRouterAbi *abi.ABI
 }
 
-func NewScanner(c *config.Config) *Scanner {
+type EvmClient struct {
+	Client       *ethclient.Client
+	CuniBTCVault *cunibtcvault.Cunibtcvault
+	RedeemRouter *delayredeemrouter.Delayredeemrouter
+}
+
+func NewScanner(c *config.EvmScanConf) *Scanner {
 	db, err := gorm.Open(mysql.Open(c.DataSource))
 	if c.SqlLog {
 		db.Logger = gormz.NewGormLogger()
 	}
 	logx.Must(err)
-	evmClients := lo.Map(c.ChainInfo, func(item config.ChainInfo, index int) *ethclient.Client {
-		return goeth.NewClient(item.Client.Host, item.Client.Request, item.Client.PeriodSec)
+	evmClients := lo.Map(c.ChainInfo, func(item config.ChainInfo, index int) *EvmClient {
+		client := goeth.NewClient(item.Client.Host, item.Client.Request, item.Client.PeriodSec)
+		cunibtcvault, err := cunibtcvault.NewCunibtcvault(common.HexToAddress(item.CuniBTCVault), client)
+		logx.Must(err)
+		redeemRouter, err := delayredeemrouter.NewDelayredeemrouter(common.HexToAddress(item.DelayRedeemRouter), client)
+		logx.Must(err)
+		return &EvmClient{
+			Client:       client,
+			CuniBTCVault: cunibtcvault,
+			RedeemRouter: redeemRouter,
+		}
 	})
-	cuniBTCVault, _ := cunibtcvault.NewCunibtcvault(common.HexToAddress(c.ChainInfo[0].CuniBTCVault), evmClients[0])
+
 	cuniBTCVaultAbi, _ := cunibtcvault.CunibtcvaultMetaData.GetAbi()
-	redeemRouter, _ := delayredeemrouter.NewDelayredeemrouter(common.HexToAddress(c.ChainInfo[0].DelayRedeemRouter), evmClients[0])
 	redeemRouterAbi, _ := delayredeemrouter.DelayredeemrouterMetaData.GetAbi()
 
 	return &Scanner{
 		database:        db,
 		config:          c,
 		evmClients:      evmClients,
-		cuniBTCVault:    cuniBTCVault,
 		cuniBTCVaultAbi: cuniBTCVaultAbi,
-		redeemRouter:    redeemRouter,
 		redeemRouterAbi: redeemRouterAbi,
 	}
 }
@@ -69,7 +79,7 @@ func (s *Scanner) LogScan() {
 			return
 		}
 
-		start, end, err := s.getScanRange(s.evmClients[k], cursor.BlockNumber)
+		start, end, err := s.getScanRange(s.evmClients[k].Client, cursor.BlockNumber)
 		if err != nil {
 			logx.Errorf("get chain: %v, latest block number failed, err: %v", chain.Client.ChainId, err)
 			continue
@@ -80,7 +90,7 @@ func (s *Scanner) LogScan() {
 		}
 		logx.Infof("chain: %v, need scan blocks start:%v, end:%v", chain.Client.ChainId, start, end)
 
-		logs, err := s.fetchLogs(s.evmClients[k], start, end, chain.CuniBTCVault, chain.DelayRedeemRouter)
+		logs, err := s.fetchLogs(s.evmClients[k].Client, start, end, chain.CuniBTCVault, chain.DelayRedeemRouter)
 		if err != nil {
 			logx.Errorf("get chain: %v, filter logs failed, err: %v", chain.Client.ChainId, err)
 			continue
@@ -99,14 +109,14 @@ func (s *Scanner) LogScan() {
 	}
 }
 
-func (s *Scanner) processLogs(logs []types.Log, client *ethclient.Client, chainInfo config.ChainInfo) ([]*model.EvmTransaction, error) {
+func (s *Scanner) processLogs(logs []types.Log, evmClient *EvmClient, chainInfo config.ChainInfo) ([]*model.EvmTransaction, error) {
 	events := make([]*model.EvmTransaction, 0)
 	for _, log := range logs {
 		if log.Removed {
 			logx.Errorf("log removed, hash:%v, blockNumber:%v, blockHash:%v", log.TxHash, log.BlockNumber, log.BlockHash)
 			return nil, fmt.Errorf("log removed")
 		}
-		transactionRecipient, err := client.TransactionReceipt(context.Background(), log.TxHash)
+		transactionRecipient, err := evmClient.Client.TransactionReceipt(context.Background(), log.TxHash)
 		if err != nil {
 			logx.Errorf("get transaction receipt failed, err: %v", err)
 			return nil, err
@@ -118,7 +128,7 @@ func (s *Scanner) processLogs(logs []types.Log, client *ethclient.Client, chainI
 		switch log.Address {
 		case common.HexToAddress(chainInfo.CuniBTCVault):
 			// Process CuniBTCVault events
-			evmTransaction, err := s.processCuniBTCVaultLog(log, chainInfo)
+			evmTransaction, err := s.processCuniBTCVaultLog(log, chainInfo, evmClient)
 			if err != nil {
 				logx.Errorf("processCuniBTCVaultLog error, err: %v", err)
 				return nil, err
@@ -129,7 +139,7 @@ func (s *Scanner) processLogs(logs []types.Log, client *ethclient.Client, chainI
 
 		case common.HexToAddress(chainInfo.DelayRedeemRouter):
 			// Process DelayRedeemRouter events
-			evmTransaction, err := s.processDelayRedeemRouterLog(log, chainInfo)
+			evmTransaction, err := s.processDelayRedeemRouterLog(log, chainInfo, evmClient)
 			if err != nil {
 				logx.Errorf("processDelayRedeemRouterLog error, err: %v", err)
 				return nil, err
@@ -142,15 +152,15 @@ func (s *Scanner) processLogs(logs []types.Log, client *ethclient.Client, chainI
 	return events, nil
 }
 
-func (s *Scanner) processCuniBTCVaultLog(log types.Log, chainInfo config.ChainInfo) (*model.EvmTransaction, error) {
+func (s *Scanner) processCuniBTCVaultLog(log types.Log, chainInfo config.ChainInfo, evmClient *EvmClient) (*model.EvmTransaction, error) {
 	eventName, err := s.cuniBTCVaultAbi.EventByID(log.Topics[0])
 	if err != nil {
-		logx.Errorf("get event name failed, err: %v", err)
-		return nil, err
+		logx.Errorf("get event name failed, maybe upgraded hash: %v, err: %v", log.TxHash, err)
+		return nil, nil
 	}
 	switch eventName.Name {
 	case "Minted":
-		mintedEvent, err := s.cuniBTCVault.ParseMinted(log)
+		mintedEvent, err := evmClient.CuniBTCVault.ParseMinted(log)
 		if err != nil {
 			logx.Errorf("parse minted event failed, err: %v", err)
 			return nil, err
@@ -168,15 +178,15 @@ func (s *Scanner) processCuniBTCVaultLog(log types.Log, chainInfo config.ChainIn
 	return nil, nil
 }
 
-func (s *Scanner) processDelayRedeemRouterLog(log types.Log, chainInfo config.ChainInfo) (*model.EvmTransaction, error) {
+func (s *Scanner) processDelayRedeemRouterLog(log types.Log, chainInfo config.ChainInfo, evmClient *EvmClient) (*model.EvmTransaction, error) {
 	eventName, err := s.redeemRouterAbi.EventByID(log.Topics[0])
 	if err != nil {
-		logx.Errorf("get event name failed, err: %v", err)
-		return nil, err
+		logx.Errorf("get event name failed, maybe upgraded hash: %v, err: %v", log.TxHash, err)
+		return nil, nil
 	}
 	switch eventName.Name {
 	case "DelayedRedeemCreated":
-		redeemCreatedEvent, err := s.redeemRouter.ParseDelayedRedeemCreated(log)
+		redeemCreatedEvent, err := evmClient.RedeemRouter.ParseDelayedRedeemCreated(log)
 		if err != nil {
 			logx.Errorf("parse delayed redeem created event failed, err: %v", err)
 			return nil, err
@@ -243,7 +253,9 @@ func (s *Scanner) saveScanResult(events []*model.EvmTransaction, chain config.Ch
 			logx.Errorf("save cursor failed, err: %v", err)
 			return err
 		}
-		slack.SendTo(s.config.NotifySlack, fmt.Sprintf("chain[%d], evm transactions saved[%d]", chain.Client.ChainId, ret.RowsAffected))
+		if ret.RowsAffected != 0 {
+			slack.SendTo(s.config.NotifySlack, fmt.Sprintf("[%s] chain[%d], evm transactions saved[%d]", s.config.Name, chain.Client.ChainId, ret.RowsAffected))
+		}
 		return nil
 	})
 }

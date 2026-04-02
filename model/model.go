@@ -8,7 +8,7 @@ import (
 type Cursor struct {
 	gorm.Model
 	// ChainId used for evm chain
-	ChainId   uint   `gorm:"not null;default:0;index:t_chainid_name"`
+	ChainId   uint   `gorm:"not null;default:0;index:t_chainid_name,unique"`
 	ChainName string `gorm:"size:255;index:t_chainid_name"`
 	// BlockNumber when we scan from_blockNUmber to to_blockNumber, has processed
 	BlockNumber uint64 `gorm:"default:0"`
@@ -19,7 +19,7 @@ type Cursor struct {
 type EvmTransaction struct {
 	gorm.Model
 	// effect address, such as from or to
-	Address        string `gorm:"size:255;index:t_address_chainid_hash"`
+	Address        string `gorm:"size:255;index:t_address_chainid_hash,unique"`
 	ChainId        uint   `gorm:"not null;default:0;index:t_address_chainid_hash"`
 	Hash           string `gorm:"size:255;index:t_address_chainid_hash"`
 	BlockNumber    uint64 `gorm:"default:0;index:t_blocknumber"`
