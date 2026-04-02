@@ -27,4 +27,5 @@ type EvmTransaction struct {
 	// + for income, - for outcome
 	Amount    decimal.Decimal `gorm:"type:decimal(38);default:0"`
 	LogMethod string          `gorm:"size:255"`
+	Memo      string          `gorm:"size:255"`
 }
