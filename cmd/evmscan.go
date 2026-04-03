@@ -35,7 +35,7 @@ to quickly create a Cobra application.`,
 		//log
 		if c.LogSlack != "" {
 			logx.AddWriter(logx.NewWriter(slack.NewSlackWriter(c.LogSlack)))
-			logx.AddGlobalFields(logx.Field("server", c.Name))
+			logx.AddGlobalFields(logx.Field("server", c.EvmScanConf.Name))
 			defer logx.Close()
 		}
 

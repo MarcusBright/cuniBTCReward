@@ -29,3 +29,9 @@ type EvmTransaction struct {
 	LogMethod string          `gorm:"size:255"`
 	Memo      string          `gorm:"size:255"`
 }
+
+func GetCursor(database *gorm.DB, chainID uint) (*Cursor, error) {
+	var cursor Cursor
+	err := database.Model(&Cursor{}).Where("chain_id = ?", chainID).First(&cursor).Error
+	return &cursor, err
+}

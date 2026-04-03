@@ -73,7 +73,7 @@ func (s *Scanner) LogScan() {
 	for k, chain := range s.config.ChainInfo {
 		logx.Infof("chain: %v, name: %v, logscan", chain.Client.ChainId, chain.Client.ChainName)
 
-		cursor, err := s.getCursor(uint64(chain.Client.ChainId))
+		cursor, err := model.GetCursor(s.database, chain.Client.ChainId)
 		if err != nil {
 			logx.Errorf("get chain: %v, cursor failed, err: %v", chain.Client.ChainId, err)
 			return
@@ -202,12 +202,6 @@ func (s *Scanner) processDelayRedeemRouterLog(log types.Log, chainInfo config.Ch
 		}, nil
 	}
 	return nil, nil
-}
-
-func (s *Scanner) getCursor(chainID uint64) (*model.Cursor, error) {
-	var cursor model.Cursor
-	err := s.database.Model(&model.Cursor{}).Where("chain_id = ?", chainID).First(&cursor).Error
-	return &cursor, err
 }
 
 func (s *Scanner) getScanRange(client *ethclient.Client, cursorBlock uint64) (int64, int64, error) {
