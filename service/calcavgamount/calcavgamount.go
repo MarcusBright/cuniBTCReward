@@ -5,6 +5,7 @@ import (
 	"cuniBTCReward/pkg/gormz"
 	"fmt"
 
+	"github.com/samber/lo"
 	"github.com/shopspring/decimal"
 	"github.com/zeromicro/go-zero/core/logx"
 	"gorm.io/driver/mysql"
@@ -43,7 +44,7 @@ func CalcAvgAmount(startAmount decimal.Decimal, transactions []*model.EvmTransac
 	blockDelta := endBlock - previousBlock
 	weightedSum = weightedSum.Add(previousAmount.Mul(decimal.NewFromInt(int64(blockDelta))))
 
-	return weightedSum.DivRound(decimal.NewFromInt(int64(totalBlocks)), 0), nil
+	return weightedSum.Div(decimal.NewFromInt(int64(totalBlocks))).Floor(), nil
 }
 
 type Calulator struct {
@@ -73,6 +74,9 @@ func (c *Calulator) GetAvgAmount(startBlock, endBlock uint64) (result []AvgAmoun
 		return nil, err
 	}
 	for _, item := range startAmount {
+		if item.AvgAmount.IsNegative() {
+			return nil, fmt.Errorf("startAmount[%s] is negative for address[%s]", item.AvgAmount.String(), item.Address)
+		}
 		transactions, err := c.getAddressTransactions(item.Address, startBlock, endBlock)
 		if err != nil {
 			return nil, err
@@ -90,11 +94,33 @@ func (c *Calulator) GetAvgAmount(startBlock, endBlock uint64) (result []AvgAmoun
 }
 
 func (c *Calulator) getAllAddressStartAmount(startBlock uint64) (result []AvgAmountResult, err error) {
-	ret := c.database.Model(&model.EvmTransaction{}).Select("address, sum(amount) as avg_amount").
-		Where("chain_id = ? and block_number < ?", c.chainId, startBlock).Group("address").Scan(&result)
+	var distinctAddresses []string
+	ret := c.database.Model(&model.EvmTransaction{}).Distinct("address").
+		Where("chain_id = ?", c.chainId).Pluck("address", &distinctAddresses)
 	if ret.Error != nil {
 		return nil, ret.Error
 	}
+
+	var addressAmounts []AvgAmountResult
+	ret = c.database.Model(&model.EvmTransaction{}).Select("address, sum(amount) as avg_amount").
+		Where("chain_id = ? and block_number < ?", c.chainId, startBlock).Group("address").Scan(&addressAmounts)
+	if ret.Error != nil {
+		return nil, ret.Error
+	}
+
+	addressAmountMap := lo.SliceToMap(addressAmounts, func(item AvgAmountResult) (string, AvgAmountResult) {
+		return item.Address, item
+	})
+
+	result = lo.Map(distinctAddresses, func(address string, index int) AvgAmountResult {
+		if item, ok := addressAmountMap[address]; ok {
+			return item
+		}
+		return AvgAmountResult{
+			Address:   address,
+			AvgAmount: decimal.Zero,
+		}
+	})
 	return
 }
 
