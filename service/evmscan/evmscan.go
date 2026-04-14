@@ -6,14 +6,19 @@ import (
 	"cuniBTCReward/model"
 	"cuniBTCReward/pkg/gormz"
 	"cuniBTCReward/pkg/slack"
+	"cuniBTCReward/service/contract/airdrop"
 	"cuniBTCReward/service/contract/cunibtcvault"
 	"cuniBTCReward/service/contract/delayredeemrouter"
+	"cuniBTCReward/service/contract/factory"
 	"cuniBTCReward/service/evmscan/config"
+	"encoding/hex"
 	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind/v2"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -30,12 +35,13 @@ type Scanner struct {
 	evmClients      []*EvmClient
 	cuniBTCVaultAbi *abi.ABI
 	redeemRouterAbi *abi.ABI
+	airDropAbi      *abi.ABI
+	factoryAbi      *abi.ABI
 }
 
 type EvmClient struct {
-	Client       *ethclient.Client
-	CuniBTCVault *cunibtcvault.Cunibtcvault
-	RedeemRouter *delayredeemrouter.Delayredeemrouter
+	Client  *ethclient.Client
+	Factory *factory.Factory
 }
 
 func NewScanner(c *config.EvmScanConf) *Scanner {
@@ -44,21 +50,21 @@ func NewScanner(c *config.EvmScanConf) *Scanner {
 		db.Logger = gormz.NewGormLogger()
 	}
 	logx.Must(err)
+
 	evmClients := lo.Map(c.ChainInfo, func(item config.ChainInfo, index int) *EvmClient {
 		client := goeth.NewClient(item.Client.Host, item.Client.Request, item.Client.PeriodSec)
-		cunibtcvault, err := cunibtcvault.NewCunibtcvault(common.HexToAddress(item.CuniBTCVault), client)
-		logx.Must(err)
-		redeemRouter, err := delayredeemrouter.NewDelayredeemrouter(common.HexToAddress(item.DelayRedeemRouter), client)
+		factory, err := factory.NewFactory(common.HexToAddress(item.Factory), client)
 		logx.Must(err)
 		return &EvmClient{
-			Client:       client,
-			CuniBTCVault: cunibtcvault,
-			RedeemRouter: redeemRouter,
+			Client:  client,
+			Factory: factory,
 		}
 	})
 
 	cuniBTCVaultAbi, _ := cunibtcvault.CunibtcvaultMetaData.GetAbi()
 	redeemRouterAbi, _ := delayredeemrouter.DelayredeemrouterMetaData.GetAbi()
+	airDropAbi, _ := airdrop.AirdropMetaData.GetAbi()
+	factoryAbi, _ := factory.FactoryMetaData.GetAbi()
 
 	return &Scanner{
 		database:        db,
@@ -66,6 +72,8 @@ func NewScanner(c *config.EvmScanConf) *Scanner {
 		evmClients:      evmClients,
 		cuniBTCVaultAbi: cuniBTCVaultAbi,
 		redeemRouterAbi: redeemRouterAbi,
+		airDropAbi:      airDropAbi,
+		factoryAbi:      factoryAbi,
 	}
 }
 
@@ -90,82 +98,299 @@ func (s *Scanner) LogScan() {
 		}
 		logx.Infof("chain: %v, need scan blocks start:%v, end:%v", chain.Client.ChainId, start, end)
 
-		logs, err := s.fetchLogs(s.evmClients[k].Client, start, end, chain.CuniBTCVault, chain.DelayRedeemRouter)
+		factoryLogs, err := s.fetchLogs(s.evmClients[k].Client, start, end, []common.Address{common.HexToAddress(chain.Factory)})
 		if err != nil {
 			logx.Errorf("get chain: %v, filter logs failed, err: %v", chain.Client.ChainId, err)
 			continue
 		}
-
-		events, err := s.processLogs(logs, s.evmClients[k], chain)
+		logx.Infof("chain: %v, fetched factoryLogs: %v", chain.Client.ChainId, len(factoryLogs))
+		// Process Factory events
+		newStrategy, err := s.processFactoryLog(factoryLogs, chain, s.evmClients[k])
 		if err != nil {
-			logx.Errorf("process logs failed, err: %v", err)
+			logx.Errorf("processFactoryLog error, err: %v", err)
+			continue
+		}
+		if newStrategy {
+			logx.Info("strategy created, reLogs")
 			continue
 		}
 
-		if err := s.saveScanResult(events, chain, cursor, end); err != nil {
-			logx.Errorf("save events failed, err: %v", err)
+		stratigies, err := model.GetStrategy(s.database, chain.Client.ChainId)
+		if err != nil {
+			logx.Errorf("get chain: %v, strategy failed, err: %v", chain.Client.ChainId, err)
+			continue
+		}
+		addresses := lo.FlatMap(stratigies, func(item model.Strategy, index int) []common.Address {
+			return []common.Address{
+				common.HexToAddress(item.Vault),
+				common.HexToAddress(item.DelayRedeemRouter),
+				common.HexToAddress(item.Airdrop),
+			}
+		})
+		logx.Infof("chain: %v, need scan addresses: %v", chain.Client.ChainId, addresses)
+		logs, err := s.fetchLogs(s.evmClients[k].Client, start, end, addresses)
+		if err != nil {
+			logx.Errorf("get chain: %v, filter logs failed, err: %v", chain.Client.ChainId, err)
+			continue
+		}
+		logx.Infof("chain: %v, fetched logs: %v", chain.Client.ChainId, len(logs))
+		cursor.BlockNumber = uint64(end)
+		if err := s.processAndSave(cursor, logs, s.evmClients[k], chain, stratigies); err != nil {
+			logx.Errorf("chain: %v, process logs failed, err: %v", chain.Client.ChainId, err)
+			continue
+		}
+		if err := s.EpochSpin(s.evmClients[k], chain, cursor.BlockNumber, stratigies); err != nil {
+			logx.Errorf("chain: %v, epoch spin failed, err: %v", chain.Client.ChainId, err)
 			continue
 		}
 	}
 }
 
-func (s *Scanner) processLogs(logs []types.Log, evmClient *EvmClient, chainInfo config.ChainInfo) ([]*model.EvmTransaction, error) {
-	events := make([]*model.EvmTransaction, 0)
+func (s *Scanner) EpochSpin(evmClient *EvmClient, chainInfo config.ChainInfo, blockNumber uint64, stratigies []model.Strategy) error {
+	for _, strategy := range stratigies {
+		var epoch []model.Epoch
+		err := s.database.Where("chain_id = ? AND contract = ?", chainInfo.Client.ChainId, strategy.Vault).
+			Order("epoch desc").Limit(1).Find(&epoch).Error
+		if err != nil {
+			logx.Errorf("get epoch failed, err: %v", err)
+			return err
+		}
+		cuniBTCVault, _ := cunibtcvault.NewCunibtcvault(common.HexToAddress(strategy.Vault), evmClient.Client)
+		startGenesis, err := cuniBTCVault.StartGenesis(&bind.CallOpts{Context: context.Background()})
+		if err != nil {
+			logx.Errorf("get start genesis failed, err: %v", err)
+			return err
+		}
+		operatePeriod, err := cuniBTCVault.OperatePeriod(&bind.CallOpts{Context: context.Background()})
+		if err != nil {
+			logx.Errorf("get operate period failed, err: %v", err)
+			return err
+		}
+		lockupPeriod, err := cuniBTCVault.LockupPeriod(&bind.CallOpts{Context: context.Background()})
+		if err != nil {
+			logx.Errorf("get lockup period failed, err: %v", err)
+			return err
+		}
+		epochNumber := (blockNumber - startGenesis.Uint64()) / (operatePeriod.Uint64() + lockupPeriod.Uint64())
+
+		if len(epoch) == 0 {
+			for i := uint64(0); i <= epochNumber; i++ {
+				newEpoch := model.Epoch{
+					ChainId:       chainInfo.Client.ChainId,
+					Epoch:         i,
+					Contract:      strategy.Vault,
+					OperateStart:  startGenesis.Uint64() + i*(operatePeriod.Uint64()+lockupPeriod.Uint64()),
+					LockupStart:   startGenesis.Uint64() + i*(operatePeriod.Uint64()+lockupPeriod.Uint64()) + operatePeriod.Uint64(),
+					StartGenesis:  startGenesis.Uint64(),
+					OperatePeriod: operatePeriod.Uint64(),
+					LockupPeriod:  lockupPeriod.Uint64(),
+				}
+				if err := s.database.Create(&newEpoch).Error; err != nil {
+					logx.Errorf("create epoch failed, err: %v", err)
+					return err
+				}
+				slack.SendTo(s.config.NotifySlack, fmt.Sprintf("[%s] New epoch created for vault: %s, epoch: %d, operate start: %d, lockup start: %d", s.config.Name,
+					strategy.Vault, newEpoch.Epoch, newEpoch.OperateStart, newEpoch.LockupStart))
+			}
+		} else {
+			//check
+			if epoch[0].OperatePeriod != operatePeriod.Uint64() || epoch[0].LockupPeriod != lockupPeriod.Uint64() || epoch[0].StartGenesis != startGenesis.Uint64() {
+				return fmt.Errorf("epoch parameters updated for vault: %s", strategy.Vault)
+			}
+			for i := uint64(epoch[0].Epoch + 1); i <= epochNumber; i++ {
+				newEpoch := model.Epoch{
+					ChainId:       chainInfo.Client.ChainId,
+					Epoch:         i,
+					Contract:      strategy.Vault,
+					OperateStart:  startGenesis.Uint64() + i*(operatePeriod.Uint64()+lockupPeriod.Uint64()),
+					LockupStart:   startGenesis.Uint64() + i*(operatePeriod.Uint64()+lockupPeriod.Uint64()) + operatePeriod.Uint64(),
+					StartGenesis:  startGenesis.Uint64(),
+					OperatePeriod: operatePeriod.Uint64(),
+					LockupPeriod:  lockupPeriod.Uint64(),
+				}
+				if err := s.database.Create(&newEpoch).Error; err != nil {
+					logx.Errorf("create epoch failed, err: %v", err)
+					return err
+				}
+				slack.SendTo(s.config.NotifySlack, fmt.Sprintf("[%s] New epoch created for vault: %s, epoch: %d, operate start: %d, lockup start: %d", s.config.Name,
+					strategy.Vault, newEpoch.Epoch, newEpoch.OperateStart, newEpoch.LockupStart))
+			}
+		}
+	}
+	return nil
+}
+
+func (s *Scanner) processAndSave(cursor *model.Cursor, logs []types.Log, evmClient *EvmClient, chainInfo config.ChainInfo, strategies []model.Strategy) error {
+	tx := s.database.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+	if err := tx.Error; err != nil {
+		logx.Errorf("chain: %v, start transaction failed, err: %v", chainInfo.Client.ChainId, err)
+		return err
+	}
+
+	if err := s.processLogs(logs, evmClient, chainInfo, strategies, tx); err != nil {
+		logx.Errorf("process logs failed, err: %v", err)
+		tx.Rollback()
+		return err
+	}
+	if err := tx.Save(cursor).Error; err != nil {
+		logx.Errorf("save cursor failed, err: %v", err)
+		tx.Rollback()
+		return err
+	}
+	if err := tx.Commit().Error; err != nil {
+		logx.Errorf("chain: %v, commit transaction failed, err: %v", chainInfo.Client.ChainId, err)
+		return err
+	}
+	return nil
+}
+
+func (s *Scanner) processLogs(logs []types.Log, evmClient *EvmClient, chainInfo config.ChainInfo, strategies []model.Strategy, tx *gorm.DB) error {
 	for _, log := range logs {
 		if log.Removed {
 			logx.Errorf("log removed, hash:%v, blockNumber:%v, blockHash:%v", log.TxHash, log.BlockNumber, log.BlockHash)
-			return nil, fmt.Errorf("log removed")
+			return fmt.Errorf("log removed")
 		}
 		transactionRecipient, err := evmClient.Client.TransactionReceipt(context.Background(), log.TxHash)
 		if err != nil {
 			logx.Errorf("get transaction receipt failed, err: %v", err)
-			return nil, err
+			return err
 		}
 		if transactionRecipient.Status != types.ReceiptStatusSuccessful {
 			logx.Infof("transaction status not successful, hash: %v, status: %v", log.TxHash.Hex(), transactionRecipient.Status)
 			continue
 		}
-		switch log.Address {
-		case common.HexToAddress(chainInfo.CuniBTCVault):
+		if isCuniBTCVault(log.Address, strategies) {
 			// Process CuniBTCVault events
-			evmTransaction, err := s.processCuniBTCVaultLog(log, chainInfo, evmClient)
+			err := s.processCuniBTCVaultLog(log, chainInfo, evmClient, tx)
 			if err != nil {
 				logx.Errorf("processCuniBTCVaultLog error, err: %v", err)
-				return nil, err
+				return err
 			}
-			if evmTransaction != nil {
-				events = append(events, evmTransaction)
-			}
-
-		case common.HexToAddress(chainInfo.DelayRedeemRouter):
+		} else if isDelayRedeemRouter(log.Address, strategies) {
 			// Process DelayRedeemRouter events
-			evmTransaction, err := s.processDelayRedeemRouterLog(log, chainInfo, evmClient)
+			err := s.processDelayRedeemRouterLog(log, chainInfo, evmClient, tx)
 			if err != nil {
 				logx.Errorf("processDelayRedeemRouterLog error, err: %v", err)
-				return nil, err
+				return err
 			}
-			if evmTransaction != nil {
-				events = append(events, evmTransaction)
+		} else if isAirDrop(log.Address, strategies) {
+			// Process Airdrop events
+			err := s.processAirDropLog(log, chainInfo, evmClient, tx)
+			if err != nil {
+				logx.Errorf("processAirDropLog error, err: %v", err)
+				return err
+			}
+		} else {
+			continue
+		}
+	}
+	return nil
+}
+
+func isCuniBTCVault(address common.Address, strategies []model.Strategy) bool {
+	for _, strategy := range strategies {
+		if common.HexToAddress(strategy.Vault) == address {
+			return true
+		}
+	}
+	return false
+}
+
+func isDelayRedeemRouter(address common.Address, strategies []model.Strategy) bool {
+	for _, strategy := range strategies {
+		if common.HexToAddress(strategy.DelayRedeemRouter) == address {
+			return true
+		}
+	}
+	return false
+}
+
+func isAirDrop(address common.Address, strategies []model.Strategy) bool {
+	for _, strategy := range strategies {
+		if common.HexToAddress(strategy.Airdrop) == address {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *Scanner) processFactoryLog(logs []types.Log, chainInfo config.ChainInfo, evmClient *EvmClient) (bool, error) {
+	hasNewCreate := false
+	for _, log := range logs {
+		if log.Removed {
+			logx.Errorf("log removed, hash:%v, blockNumber:%v, blockHash:%v", log.TxHash, log.BlockNumber, log.BlockHash)
+			return false, fmt.Errorf("log removed")
+		}
+		transactionRecipient, err := evmClient.Client.TransactionReceipt(context.Background(), log.TxHash)
+		if err != nil {
+			logx.Errorf("get transaction receipt failed, err: %v", err)
+			return false, err
+		}
+		if transactionRecipient.Status != types.ReceiptStatusSuccessful {
+			logx.Infof("transaction status not successful, hash: %v, status: %v", log.TxHash.Hex(), transactionRecipient.Status)
+			continue
+		}
+		eventName, err := s.factoryAbi.EventByID(log.Topics[0])
+		if err != nil {
+			logx.Errorf("get event name failed, maybe upgraded hash: %v, err: %v", log.TxHash, err)
+			return false, nil
+		}
+		switch eventName.Name {
+		case "StrategyCreate":
+			newStrategyEvent, err := evmClient.Factory.ParseStrategyCreate(log)
+			if err != nil {
+				logx.Errorf("parse new strategy event failed, err: %v", err)
+				return false, err
+			}
+			strategy := &model.Strategy{
+				ChainId:           chainInfo.Client.ChainId,
+				Name:              newStrategyEvent.Strategy.Name,
+				Symbol:            newStrategyEvent.Strategy.Symbol,
+				CuniBTC:           newStrategyEvent.Strategy.CuniBTC.String(),
+				Vault:             newStrategyEvent.Strategy.Vault.String(),
+				DelayRedeemRouter: newStrategyEvent.Strategy.DelayRedeemRouter.String(),
+				Airdrop:           newStrategyEvent.Strategy.Airdrop.String(),
+			}
+			//find or create
+			strategyInDb := []model.Strategy{}
+			if err := s.database.Where("chain_id = ? AND name = ? AND symbol = ?", strategy.ChainId, strategy.Name, strategy.Symbol).
+				Limit(1).Find(&strategyInDb).Error; err != nil {
+				logx.Errorf("query strategy failed, err: %v", err)
+				return false, err
+			}
+			if len(strategyInDb) == 0 {
+				slack.SendTo(s.config.NotifySlack, fmt.Sprintf("[%s] New strategy created: %s, symbol: %s, vault: %s", s.config.Name, strategy.Name, strategy.Symbol, strategy.Vault))
+				hasNewCreate = true
+				if err := s.database.Create(&strategy).Error; err != nil {
+					logx.Errorf("create strategy failed, err: %v", err)
+					return hasNewCreate, err
+				}
 			}
 		}
 	}
-	return events, nil
+	return hasNewCreate, nil
 }
 
-func (s *Scanner) processCuniBTCVaultLog(log types.Log, chainInfo config.ChainInfo, evmClient *EvmClient) (*model.EvmTransaction, error) {
+func (s *Scanner) processCuniBTCVaultLog(log types.Log, chainInfo config.ChainInfo, evmClient *EvmClient, tx *gorm.DB) error {
 	eventName, err := s.cuniBTCVaultAbi.EventByID(log.Topics[0])
 	if err != nil {
 		logx.Errorf("get event name failed, maybe upgraded hash: %v, err: %v", log.TxHash, err)
-		return nil, nil
+		return nil
 	}
+	cuniBTCVault, _ := cunibtcvault.NewCunibtcvault(log.Address, evmClient.Client)
 	switch eventName.Name {
 	case "Minted":
-		mintedEvent, err := evmClient.CuniBTCVault.ParseMinted(log)
+		mintedEvent, err := cuniBTCVault.ParseMinted(log)
 		if err != nil {
 			logx.Errorf("parse minted event failed, err: %v", err)
-			return nil, err
+			return nil
 		}
-		return &model.EvmTransaction{
+		return tx.Create(&model.EvmTransaction{
 			Address:        mintedEvent.Sender.String(),
 			ChainId:        chainInfo.Client.ChainId,
 			Hash:           log.TxHash.String(),
@@ -173,25 +398,34 @@ func (s *Scanner) processCuniBTCVaultLog(log types.Log, chainInfo config.ChainIn
 			BlockTimestamp: log.BlockTimestamp,
 			Amount:         decimal.NewFromBigInt(mintedEvent.Amount, 0),
 			LogMethod:      "Minted",
-		}, nil
+		}).Error
+	case "PeriodSet":
+		periodSetEvent, err := cuniBTCVault.ParsePeriodSet(log)
+		if err != nil {
+			logx.Errorf("parse period set event failed, err: %v", err)
+			return nil
+		}
+		slack.SendTo(s.config.NotifySlack, fmt.Sprintf("[%s] Period updated for vault: %s, operate period: %d, lockup period: %d", s.config.Name,
+			log.Address.String(), periodSetEvent.OperatePeriod, periodSetEvent.LockupPeriod))
 	}
-	return nil, nil
+	return nil
 }
 
-func (s *Scanner) processDelayRedeemRouterLog(log types.Log, chainInfo config.ChainInfo, evmClient *EvmClient) (*model.EvmTransaction, error) {
+func (s *Scanner) processDelayRedeemRouterLog(log types.Log, chainInfo config.ChainInfo, evmClient *EvmClient, tx *gorm.DB) error {
 	eventName, err := s.redeemRouterAbi.EventByID(log.Topics[0])
 	if err != nil {
 		logx.Errorf("get event name failed, maybe upgraded hash: %v, err: %v", log.TxHash, err)
-		return nil, nil
+		return nil
 	}
+	redeemRouter, _ := delayredeemrouter.NewDelayredeemrouter(log.Address, evmClient.Client)
 	switch eventName.Name {
 	case "DelayedRedeemCreated":
-		redeemCreatedEvent, err := evmClient.RedeemRouter.ParseDelayedRedeemCreated(log)
+		redeemCreatedEvent, err := redeemRouter.ParseDelayedRedeemCreated(log)
 		if err != nil {
 			logx.Errorf("parse delayed redeem created event failed, err: %v", err)
-			return nil, err
+			return err
 		}
-		return &model.EvmTransaction{
+		return tx.Create(&model.EvmTransaction{
 			Address:        redeemCreatedEvent.Recipient.String(),
 			ChainId:        chainInfo.Client.ChainId,
 			Hash:           log.TxHash.String(),
@@ -199,9 +433,91 @@ func (s *Scanner) processDelayRedeemRouterLog(log types.Log, chainInfo config.Ch
 			BlockTimestamp: log.BlockTimestamp,
 			Amount:         decimal.NewFromBigInt(redeemCreatedEvent.Amount, 0).Neg(),
 			LogMethod:      "DelayedRedeemCreated",
-		}, nil
+		}).Error
 	}
-	return nil, nil
+	return nil
+}
+
+func (s *Scanner) processAirDropLog(log types.Log, chainInfo config.ChainInfo, evmClient *EvmClient, tx *gorm.DB) error {
+	eventName, err := s.airDropAbi.EventByID(log.Topics[0])
+	if err != nil {
+		logx.Errorf("get event name failed, maybe upgraded hash: %v, err: %v", log.TxHash, err)
+		return nil
+	}
+	airDrop, _ := airdrop.NewAirdrop(log.Address, evmClient.Client)
+	switch eventName.Name {
+	case "AirdropClaimed":
+		claimedEvent, err := airDrop.ParseAirdropClaimed(log)
+		if err != nil {
+			logx.Errorf("parse air drop claimed event failed, err: %v", err)
+			return err
+		}
+		return tx.Create(&model.AirDropRecord{
+			ChainId:  chainInfo.Client.ChainId,
+			Contract: log.Address.String(),
+			Epoch:    uint64(claimedEvent.Epoch.Int64()),
+			Address:  claimedEvent.User.String(),
+			Amount:   decimal.NewFromBigInt(claimedEvent.Amount, 0),
+			Claimed:  true,
+			ClaimTx:  log.TxHash.String(),
+			ClaimAt:  time.Unix(int64(log.BlockTimestamp), 0),
+		}).Error
+	case "MerkleRootSubmit":
+		rootEvent, err := airDrop.ParseMerkleRootSubmit(log)
+		if err != nil {
+			logx.Errorf("parse merkle root submit event failed, err: %v", err)
+			return err
+		}
+		slack.SendTo(s.config.NotifySlack, fmt.Sprintf("[%s] New merkle root submitted for vault: %s, epoch: %d", s.config.Name, log.Address.String(), rootEvent.Epoch.Int64()))
+		return tx.Create(&model.AirDropEpoch{
+			ChainId:  chainInfo.Client.ChainId,
+			Contract: log.Address.String(),
+			Epoch:    uint64(rootEvent.Epoch.Int64()),
+			Root:     hex.EncodeToString(rootEvent.Root[:]),
+		}).Error
+	case "MerkleRootUpdate":
+		rootUpdateEvent, err := airDrop.ParseMerkleRootUpdate(log)
+		if err != nil {
+			logx.Errorf("parse merkle root update event failed, err: %v", err)
+			return err
+		}
+		slack.SendTo(s.config.NotifySlack, fmt.Sprintf("[%s] Merkle root updated for vault: %s, epoch: %d", s.config.Name, log.Address.String(), rootUpdateEvent.Epoch.Int64()))
+		return tx.Model(&model.AirDropEpoch{}).Where("chain_id = ? AND contract = ? AND epoch = ?",
+			chainInfo.Client.ChainId, log.Address, rootUpdateEvent.Epoch).
+			Update("root", hex.EncodeToString(rootUpdateEvent.Root[:])).Error
+
+	case "TokenUpdate":
+		tokenUpdateEvent, err := airDrop.ParseTokenUpdate(log)
+		if err != nil {
+			logx.Errorf("parse token update event failed, err: %v", err)
+			return err
+		}
+		slack.SendTo(s.config.NotifySlack, fmt.Sprintf("[%s] Token updated for vault: %s, epoch: %d", s.config.Name, log.Address.String(), tokenUpdateEvent.Epoch.Int64()))
+		return tx.Model(&model.AirDropEpoch{}).Where("chain_id = ? AND contract = ? AND epoch = ?",
+			chainInfo.Client.ChainId, log.Address, tokenUpdateEvent.Epoch).
+			Update("token", tokenUpdateEvent.Token.String()).Error
+	case "ValidDurationUpdate":
+		durationUpdateEvent, err := airDrop.ParseValidDurationUpdate(log)
+		if err != nil {
+			logx.Errorf("parse valid duration update event failed, err: %v", err)
+			return err
+		}
+		slack.SendTo(s.config.NotifySlack, fmt.Sprintf("[%s] Valid duration updated for vault: %s, epoch: %d", s.config.Name, log.Address.String(), durationUpdateEvent.Epoch.Int64()))
+		return tx.Model(&model.AirDropEpoch{}).Where("chain_id = ? AND contract = ? AND epoch = ?",
+			chainInfo.Client.ChainId, log.Address, durationUpdateEvent.Epoch).
+			Update("valid_time", durationUpdateEvent.ValidDuration).Error
+	case "DistributionDisabledSet":
+		disabledEvent, err := airDrop.ParseDistributionDisabledSet(log)
+		if err != nil {
+			logx.Errorf("parse distribution disabled set event failed, err: %v", err)
+			return err
+		}
+		slack.SendTo(s.config.NotifySlack, fmt.Sprintf("[%s] Distribution disabled set for vault: %s, epoch: %d", s.config.Name, log.Address.String(), disabledEvent.Epoch.Int64()))
+		return tx.Model(&model.AirDropEpoch{}).Where("chain_id = ? AND contract = ? AND epoch = ?",
+			chainInfo.Client.ChainId, log.Address, disabledEvent.Epoch).
+			Update("disabled", disabledEvent.Status).Error
+	}
+	return nil
 }
 
 func (s *Scanner) getScanRange(client *ethclient.Client, cursorBlock uint64) (int64, int64, error) {
@@ -222,34 +538,10 @@ func (s *Scanner) getScanRange(client *ethclient.Client, cursorBlock uint64) (in
 	return start, end, nil
 }
 
-func (s *Scanner) fetchLogs(client *ethclient.Client, start, end int64, cuniBTC string, redeemRouter string) ([]types.Log, error) {
+func (s *Scanner) fetchLogs(client *ethclient.Client, start, end int64, addresses []common.Address) ([]types.Log, error) {
 	return client.FilterLogs(context.Background(), ethereum.FilterQuery{
 		FromBlock: big.NewInt(start),
 		ToBlock:   big.NewInt(end),
-		Addresses: []common.Address{common.HexToAddress(cuniBTC), common.HexToAddress(redeemRouter)},
-	})
-}
-
-func (s *Scanner) saveScanResult(events []*model.EvmTransaction, chain config.ChainInfo, cursor *model.Cursor, end int64) error {
-	return s.database.Transaction(func(tx *gorm.DB) error {
-		ret := s.database.CreateInBatches(events, 100)
-		if ret.Error != nil {
-			logx.Errorf("create evm transactions failed, err: %v", ret.Error)
-			return ret.Error
-		}
-		if ret.RowsAffected != int64(len(events)) {
-			logx.Errorf("create evm transactions failed, expected %d, actual %d", len(events), ret.RowsAffected)
-			return fmt.Errorf("create evm transactions failed")
-		}
-		//save cursor
-		cursor.BlockNumber = uint64(end)
-		if err := tx.Save(cursor).Error; err != nil {
-			logx.Errorf("save cursor failed, err: %v", err)
-			return err
-		}
-		if ret.RowsAffected != 0 {
-			slack.SendTo(s.config.NotifySlack, fmt.Sprintf("[%s] chain[%d], evm transactions saved[%d]", s.config.Name, chain.Client.ChainId, ret.RowsAffected))
-		}
-		return nil
+		Addresses: addresses,
 	})
 }

@@ -17,6 +17,6 @@ func TestMigrate(t *testing.T) {
 		t.Fatalf("failed to connect database: %v", err)
 	}
 	err = db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci").
-		AutoMigrate(&EvmTransaction{}, &Cursor{})
+		AutoMigrate(&EvmTransaction{}, &Cursor{}, &Strategy{}, &AirDropRecord{}, &AirDropEpoch{}, &Epoch{})
 	fmt.Printf("err: %v", err)
 }

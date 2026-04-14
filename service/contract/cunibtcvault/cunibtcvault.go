@@ -31,7 +31,7 @@ var (
 
 // CunibtcvaultMetaData contains all meta data concerning the Cunibtcvault contract.
 var CunibtcvaultMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Minted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Paused\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"StartService\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"StopService\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address[]\",\"name\":\"token\",\"type\":\"address[]\"}],\"name\":\"TargetAllowed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address[]\",\"name\":\"token\",\"type\":\"address[]\"}],\"name\":\"TargetDenied\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address[]\",\"name\":\"token\",\"type\":\"address[]\"}],\"name\":\"TokenAllowed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address[]\",\"name\":\"token\",\"type\":\"address[]\"}],\"name\":\"TokenDenied\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address[]\",\"name\":\"token\",\"type\":\"address[]\"}],\"name\":\"TokenPaused\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address[]\",\"name\":\"token\",\"type\":\"address[]\"}],\"name\":\"TokenUnpaused\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Unpaused\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"EXCHANGE_RATE_BASE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"MANAGER_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"OPERATOR_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"PAUSER_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"_targets\",\"type\":\"address[]\"}],\"name\":\"allowTarget\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"_token\",\"type\":\"address[]\"}],\"name\":\"allowToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"allowedTargetList\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"allowedTokenList\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"caps\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"cuniBTC\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"_targets\",\"type\":\"address[]\"}],\"name\":\"denyTarget\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"_token\",\"type\":\"address[]\"}],\"name\":\"denyToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_target\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"execute\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_defaultAdmin\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_cuniBTC\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"mint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"outOfService\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"_tokens\",\"type\":\"address[]\"}],\"name\":\"pauseToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"paused\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"paused\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_cap\",\"type\":\"uint256\"}],\"name\":\"setCap\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"startService\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"stopService\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"_tokens\",\"type\":\"address[]\"}],\"name\":\"unpauseToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}]",
+	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"cap\",\"type\":\"uint256\"}],\"name\":\"CapSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Minted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"start\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"operatePeriod\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"lockupPeriod\",\"type\":\"uint256\"}],\"name\":\"PeriodSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"StartService\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"StopService\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address[]\",\"name\":\"token\",\"type\":\"address[]\"}],\"name\":\"TargetAllowed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address[]\",\"name\":\"token\",\"type\":\"address[]\"}],\"name\":\"TargetDenied\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address[]\",\"name\":\"token\",\"type\":\"address[]\"}],\"name\":\"TokenAllowed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address[]\",\"name\":\"token\",\"type\":\"address[]\"}],\"name\":\"TokenDenied\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address[]\",\"name\":\"token\",\"type\":\"address[]\"}],\"name\":\"TokenPaused\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address[]\",\"name\":\"token\",\"type\":\"address[]\"}],\"name\":\"TokenUnpaused\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"EXCHANGE_RATE_BASE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"OPERATOR_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"PAUSER_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"_targets\",\"type\":\"address[]\"}],\"name\":\"allowTarget\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"_token\",\"type\":\"address[]\"}],\"name\":\"allowToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"allowedTargetList\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"allowedTokenList\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"cuniBTC\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"_targets\",\"type\":\"address[]\"}],\"name\":\"denyTarget\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"_token\",\"type\":\"address[]\"}],\"name\":\"denyToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_target\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"execute\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_defaultAdmin\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_cuniBTC\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"isLockupPeriod\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"isOperatePeriod\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"lockupPeriod\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"mint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"operatePeriod\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"outOfService\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"_tokens\",\"type\":\"address[]\"}],\"name\":\"pauseToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"periodRemain\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_cap\",\"type\":\"uint256\"}],\"name\":\"setCap\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_start\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_operatePeriod\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_lockupPeriod\",\"type\":\"uint256\"}],\"name\":\"setPeriod\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"startGenesis\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"startService\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"stopService\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"tokenCaps\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"tokenMinted\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"tokenPaused\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"_tokens\",\"type\":\"address[]\"}],\"name\":\"unpauseToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}]",
 }
 
 // CunibtcvaultABI is the input ABI used to generate the binding from.
@@ -242,37 +242,6 @@ func (_Cunibtcvault *CunibtcvaultCallerSession) EXCHANGERATEBASE() (*big.Int, er
 	return _Cunibtcvault.Contract.EXCHANGERATEBASE(&_Cunibtcvault.CallOpts)
 }
 
-// MANAGERROLE is a free data retrieval call binding the contract method 0xec87621c.
-//
-// Solidity: function MANAGER_ROLE() view returns(bytes32)
-func (_Cunibtcvault *CunibtcvaultCaller) MANAGERROLE(opts *bind.CallOpts) ([32]byte, error) {
-	var out []interface{}
-	err := _Cunibtcvault.contract.Call(opts, &out, "MANAGER_ROLE")
-
-	if err != nil {
-		return *new([32]byte), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
-
-	return out0, err
-
-}
-
-// MANAGERROLE is a free data retrieval call binding the contract method 0xec87621c.
-//
-// Solidity: function MANAGER_ROLE() view returns(bytes32)
-func (_Cunibtcvault *CunibtcvaultSession) MANAGERROLE() ([32]byte, error) {
-	return _Cunibtcvault.Contract.MANAGERROLE(&_Cunibtcvault.CallOpts)
-}
-
-// MANAGERROLE is a free data retrieval call binding the contract method 0xec87621c.
-//
-// Solidity: function MANAGER_ROLE() view returns(bytes32)
-func (_Cunibtcvault *CunibtcvaultCallerSession) MANAGERROLE() ([32]byte, error) {
-	return _Cunibtcvault.Contract.MANAGERROLE(&_Cunibtcvault.CallOpts)
-}
-
 // OPERATORROLE is a free data retrieval call binding the contract method 0xf5b541a6.
 //
 // Solidity: function OPERATOR_ROLE() view returns(bytes32)
@@ -397,37 +366,6 @@ func (_Cunibtcvault *CunibtcvaultCallerSession) AllowedTokenList(arg0 common.Add
 	return _Cunibtcvault.Contract.AllowedTokenList(&_Cunibtcvault.CallOpts, arg0)
 }
 
-// Caps is a free data retrieval call binding the contract method 0x66d97b21.
-//
-// Solidity: function caps(address ) view returns(uint256)
-func (_Cunibtcvault *CunibtcvaultCaller) Caps(opts *bind.CallOpts, arg0 common.Address) (*big.Int, error) {
-	var out []interface{}
-	err := _Cunibtcvault.contract.Call(opts, &out, "caps", arg0)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// Caps is a free data retrieval call binding the contract method 0x66d97b21.
-//
-// Solidity: function caps(address ) view returns(uint256)
-func (_Cunibtcvault *CunibtcvaultSession) Caps(arg0 common.Address) (*big.Int, error) {
-	return _Cunibtcvault.Contract.Caps(&_Cunibtcvault.CallOpts, arg0)
-}
-
-// Caps is a free data retrieval call binding the contract method 0x66d97b21.
-//
-// Solidity: function caps(address ) view returns(uint256)
-func (_Cunibtcvault *CunibtcvaultCallerSession) Caps(arg0 common.Address) (*big.Int, error) {
-	return _Cunibtcvault.Contract.Caps(&_Cunibtcvault.CallOpts, arg0)
-}
-
 // CuniBTC is a free data retrieval call binding the contract method 0x5ab99b63.
 //
 // Solidity: function cuniBTC() view returns(address)
@@ -521,6 +459,130 @@ func (_Cunibtcvault *CunibtcvaultCallerSession) HasRole(role [32]byte, account c
 	return _Cunibtcvault.Contract.HasRole(&_Cunibtcvault.CallOpts, role, account)
 }
 
+// IsLockupPeriod is a free data retrieval call binding the contract method 0x07aa621b.
+//
+// Solidity: function isLockupPeriod() view returns(bool)
+func (_Cunibtcvault *CunibtcvaultCaller) IsLockupPeriod(opts *bind.CallOpts) (bool, error) {
+	var out []interface{}
+	err := _Cunibtcvault.contract.Call(opts, &out, "isLockupPeriod")
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// IsLockupPeriod is a free data retrieval call binding the contract method 0x07aa621b.
+//
+// Solidity: function isLockupPeriod() view returns(bool)
+func (_Cunibtcvault *CunibtcvaultSession) IsLockupPeriod() (bool, error) {
+	return _Cunibtcvault.Contract.IsLockupPeriod(&_Cunibtcvault.CallOpts)
+}
+
+// IsLockupPeriod is a free data retrieval call binding the contract method 0x07aa621b.
+//
+// Solidity: function isLockupPeriod() view returns(bool)
+func (_Cunibtcvault *CunibtcvaultCallerSession) IsLockupPeriod() (bool, error) {
+	return _Cunibtcvault.Contract.IsLockupPeriod(&_Cunibtcvault.CallOpts)
+}
+
+// IsOperatePeriod is a free data retrieval call binding the contract method 0xae25b72a.
+//
+// Solidity: function isOperatePeriod() view returns(bool)
+func (_Cunibtcvault *CunibtcvaultCaller) IsOperatePeriod(opts *bind.CallOpts) (bool, error) {
+	var out []interface{}
+	err := _Cunibtcvault.contract.Call(opts, &out, "isOperatePeriod")
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// IsOperatePeriod is a free data retrieval call binding the contract method 0xae25b72a.
+//
+// Solidity: function isOperatePeriod() view returns(bool)
+func (_Cunibtcvault *CunibtcvaultSession) IsOperatePeriod() (bool, error) {
+	return _Cunibtcvault.Contract.IsOperatePeriod(&_Cunibtcvault.CallOpts)
+}
+
+// IsOperatePeriod is a free data retrieval call binding the contract method 0xae25b72a.
+//
+// Solidity: function isOperatePeriod() view returns(bool)
+func (_Cunibtcvault *CunibtcvaultCallerSession) IsOperatePeriod() (bool, error) {
+	return _Cunibtcvault.Contract.IsOperatePeriod(&_Cunibtcvault.CallOpts)
+}
+
+// LockupPeriod is a free data retrieval call binding the contract method 0xee947a7c.
+//
+// Solidity: function lockupPeriod() view returns(uint256)
+func (_Cunibtcvault *CunibtcvaultCaller) LockupPeriod(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _Cunibtcvault.contract.Call(opts, &out, "lockupPeriod")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// LockupPeriod is a free data retrieval call binding the contract method 0xee947a7c.
+//
+// Solidity: function lockupPeriod() view returns(uint256)
+func (_Cunibtcvault *CunibtcvaultSession) LockupPeriod() (*big.Int, error) {
+	return _Cunibtcvault.Contract.LockupPeriod(&_Cunibtcvault.CallOpts)
+}
+
+// LockupPeriod is a free data retrieval call binding the contract method 0xee947a7c.
+//
+// Solidity: function lockupPeriod() view returns(uint256)
+func (_Cunibtcvault *CunibtcvaultCallerSession) LockupPeriod() (*big.Int, error) {
+	return _Cunibtcvault.Contract.LockupPeriod(&_Cunibtcvault.CallOpts)
+}
+
+// OperatePeriod is a free data retrieval call binding the contract method 0x9fdedd9e.
+//
+// Solidity: function operatePeriod() view returns(uint256)
+func (_Cunibtcvault *CunibtcvaultCaller) OperatePeriod(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _Cunibtcvault.contract.Call(opts, &out, "operatePeriod")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// OperatePeriod is a free data retrieval call binding the contract method 0x9fdedd9e.
+//
+// Solidity: function operatePeriod() view returns(uint256)
+func (_Cunibtcvault *CunibtcvaultSession) OperatePeriod() (*big.Int, error) {
+	return _Cunibtcvault.Contract.OperatePeriod(&_Cunibtcvault.CallOpts)
+}
+
+// OperatePeriod is a free data retrieval call binding the contract method 0x9fdedd9e.
+//
+// Solidity: function operatePeriod() view returns(uint256)
+func (_Cunibtcvault *CunibtcvaultCallerSession) OperatePeriod() (*big.Int, error) {
+	return _Cunibtcvault.Contract.OperatePeriod(&_Cunibtcvault.CallOpts)
+}
+
 // OutOfService is a free data retrieval call binding the contract method 0x30d3c2db.
 //
 // Solidity: function outOfService() view returns(bool)
@@ -552,66 +614,66 @@ func (_Cunibtcvault *CunibtcvaultCallerSession) OutOfService() (bool, error) {
 	return _Cunibtcvault.Contract.OutOfService(&_Cunibtcvault.CallOpts)
 }
 
-// Paused is a free data retrieval call binding the contract method 0x2e48152c.
+// PeriodRemain is a free data retrieval call binding the contract method 0x9a26ccae.
 //
-// Solidity: function paused(address ) view returns(bool)
-func (_Cunibtcvault *CunibtcvaultCaller) Paused(opts *bind.CallOpts, arg0 common.Address) (bool, error) {
+// Solidity: function periodRemain() view returns(uint256)
+func (_Cunibtcvault *CunibtcvaultCaller) PeriodRemain(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
-	err := _Cunibtcvault.contract.Call(opts, &out, "paused", arg0)
+	err := _Cunibtcvault.contract.Call(opts, &out, "periodRemain")
 
 	if err != nil {
-		return *new(bool), err
+		return *new(*big.Int), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
 
 	return out0, err
 
 }
 
-// Paused is a free data retrieval call binding the contract method 0x2e48152c.
+// PeriodRemain is a free data retrieval call binding the contract method 0x9a26ccae.
 //
-// Solidity: function paused(address ) view returns(bool)
-func (_Cunibtcvault *CunibtcvaultSession) Paused(arg0 common.Address) (bool, error) {
-	return _Cunibtcvault.Contract.Paused(&_Cunibtcvault.CallOpts, arg0)
+// Solidity: function periodRemain() view returns(uint256)
+func (_Cunibtcvault *CunibtcvaultSession) PeriodRemain() (*big.Int, error) {
+	return _Cunibtcvault.Contract.PeriodRemain(&_Cunibtcvault.CallOpts)
 }
 
-// Paused is a free data retrieval call binding the contract method 0x2e48152c.
+// PeriodRemain is a free data retrieval call binding the contract method 0x9a26ccae.
 //
-// Solidity: function paused(address ) view returns(bool)
-func (_Cunibtcvault *CunibtcvaultCallerSession) Paused(arg0 common.Address) (bool, error) {
-	return _Cunibtcvault.Contract.Paused(&_Cunibtcvault.CallOpts, arg0)
+// Solidity: function periodRemain() view returns(uint256)
+func (_Cunibtcvault *CunibtcvaultCallerSession) PeriodRemain() (*big.Int, error) {
+	return _Cunibtcvault.Contract.PeriodRemain(&_Cunibtcvault.CallOpts)
 }
 
-// Paused0 is a free data retrieval call binding the contract method 0x5c975abb.
+// StartGenesis is a free data retrieval call binding the contract method 0xf09e906a.
 //
-// Solidity: function paused() view returns(bool)
-func (_Cunibtcvault *CunibtcvaultCaller) Paused0(opts *bind.CallOpts) (bool, error) {
+// Solidity: function startGenesis() view returns(uint256)
+func (_Cunibtcvault *CunibtcvaultCaller) StartGenesis(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
-	err := _Cunibtcvault.contract.Call(opts, &out, "paused0")
+	err := _Cunibtcvault.contract.Call(opts, &out, "startGenesis")
 
 	if err != nil {
-		return *new(bool), err
+		return *new(*big.Int), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
 
 	return out0, err
 
 }
 
-// Paused0 is a free data retrieval call binding the contract method 0x5c975abb.
+// StartGenesis is a free data retrieval call binding the contract method 0xf09e906a.
 //
-// Solidity: function paused() view returns(bool)
-func (_Cunibtcvault *CunibtcvaultSession) Paused0() (bool, error) {
-	return _Cunibtcvault.Contract.Paused0(&_Cunibtcvault.CallOpts)
+// Solidity: function startGenesis() view returns(uint256)
+func (_Cunibtcvault *CunibtcvaultSession) StartGenesis() (*big.Int, error) {
+	return _Cunibtcvault.Contract.StartGenesis(&_Cunibtcvault.CallOpts)
 }
 
-// Paused0 is a free data retrieval call binding the contract method 0x5c975abb.
+// StartGenesis is a free data retrieval call binding the contract method 0xf09e906a.
 //
-// Solidity: function paused() view returns(bool)
-func (_Cunibtcvault *CunibtcvaultCallerSession) Paused0() (bool, error) {
-	return _Cunibtcvault.Contract.Paused0(&_Cunibtcvault.CallOpts)
+// Solidity: function startGenesis() view returns(uint256)
+func (_Cunibtcvault *CunibtcvaultCallerSession) StartGenesis() (*big.Int, error) {
+	return _Cunibtcvault.Contract.StartGenesis(&_Cunibtcvault.CallOpts)
 }
 
 // SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
@@ -643,6 +705,99 @@ func (_Cunibtcvault *CunibtcvaultSession) SupportsInterface(interfaceId [4]byte)
 // Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
 func (_Cunibtcvault *CunibtcvaultCallerSession) SupportsInterface(interfaceId [4]byte) (bool, error) {
 	return _Cunibtcvault.Contract.SupportsInterface(&_Cunibtcvault.CallOpts, interfaceId)
+}
+
+// TokenCaps is a free data retrieval call binding the contract method 0xe0f3871f.
+//
+// Solidity: function tokenCaps(address ) view returns(uint256)
+func (_Cunibtcvault *CunibtcvaultCaller) TokenCaps(opts *bind.CallOpts, arg0 common.Address) (*big.Int, error) {
+	var out []interface{}
+	err := _Cunibtcvault.contract.Call(opts, &out, "tokenCaps", arg0)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// TokenCaps is a free data retrieval call binding the contract method 0xe0f3871f.
+//
+// Solidity: function tokenCaps(address ) view returns(uint256)
+func (_Cunibtcvault *CunibtcvaultSession) TokenCaps(arg0 common.Address) (*big.Int, error) {
+	return _Cunibtcvault.Contract.TokenCaps(&_Cunibtcvault.CallOpts, arg0)
+}
+
+// TokenCaps is a free data retrieval call binding the contract method 0xe0f3871f.
+//
+// Solidity: function tokenCaps(address ) view returns(uint256)
+func (_Cunibtcvault *CunibtcvaultCallerSession) TokenCaps(arg0 common.Address) (*big.Int, error) {
+	return _Cunibtcvault.Contract.TokenCaps(&_Cunibtcvault.CallOpts, arg0)
+}
+
+// TokenMinted is a free data retrieval call binding the contract method 0x656000a8.
+//
+// Solidity: function tokenMinted(address ) view returns(uint256)
+func (_Cunibtcvault *CunibtcvaultCaller) TokenMinted(opts *bind.CallOpts, arg0 common.Address) (*big.Int, error) {
+	var out []interface{}
+	err := _Cunibtcvault.contract.Call(opts, &out, "tokenMinted", arg0)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// TokenMinted is a free data retrieval call binding the contract method 0x656000a8.
+//
+// Solidity: function tokenMinted(address ) view returns(uint256)
+func (_Cunibtcvault *CunibtcvaultSession) TokenMinted(arg0 common.Address) (*big.Int, error) {
+	return _Cunibtcvault.Contract.TokenMinted(&_Cunibtcvault.CallOpts, arg0)
+}
+
+// TokenMinted is a free data retrieval call binding the contract method 0x656000a8.
+//
+// Solidity: function tokenMinted(address ) view returns(uint256)
+func (_Cunibtcvault *CunibtcvaultCallerSession) TokenMinted(arg0 common.Address) (*big.Int, error) {
+	return _Cunibtcvault.Contract.TokenMinted(&_Cunibtcvault.CallOpts, arg0)
+}
+
+// TokenPaused is a free data retrieval call binding the contract method 0x8995881d.
+//
+// Solidity: function tokenPaused(address ) view returns(bool)
+func (_Cunibtcvault *CunibtcvaultCaller) TokenPaused(opts *bind.CallOpts, arg0 common.Address) (bool, error) {
+	var out []interface{}
+	err := _Cunibtcvault.contract.Call(opts, &out, "tokenPaused", arg0)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// TokenPaused is a free data retrieval call binding the contract method 0x8995881d.
+//
+// Solidity: function tokenPaused(address ) view returns(bool)
+func (_Cunibtcvault *CunibtcvaultSession) TokenPaused(arg0 common.Address) (bool, error) {
+	return _Cunibtcvault.Contract.TokenPaused(&_Cunibtcvault.CallOpts, arg0)
+}
+
+// TokenPaused is a free data retrieval call binding the contract method 0x8995881d.
+//
+// Solidity: function tokenPaused(address ) view returns(bool)
+func (_Cunibtcvault *CunibtcvaultCallerSession) TokenPaused(arg0 common.Address) (bool, error) {
+	return _Cunibtcvault.Contract.TokenPaused(&_Cunibtcvault.CallOpts, arg0)
 }
 
 // AllowTarget is a paid mutator transaction binding the contract method 0xd30f0bec.
@@ -897,6 +1052,27 @@ func (_Cunibtcvault *CunibtcvaultTransactorSession) SetCap(_token common.Address
 	return _Cunibtcvault.Contract.SetCap(&_Cunibtcvault.TransactOpts, _token, _cap)
 }
 
+// SetPeriod is a paid mutator transaction binding the contract method 0x8feadcb7.
+//
+// Solidity: function setPeriod(uint256 _start, uint256 _operatePeriod, uint256 _lockupPeriod) returns()
+func (_Cunibtcvault *CunibtcvaultTransactor) SetPeriod(opts *bind.TransactOpts, _start *big.Int, _operatePeriod *big.Int, _lockupPeriod *big.Int) (*types.Transaction, error) {
+	return _Cunibtcvault.contract.Transact(opts, "setPeriod", _start, _operatePeriod, _lockupPeriod)
+}
+
+// SetPeriod is a paid mutator transaction binding the contract method 0x8feadcb7.
+//
+// Solidity: function setPeriod(uint256 _start, uint256 _operatePeriod, uint256 _lockupPeriod) returns()
+func (_Cunibtcvault *CunibtcvaultSession) SetPeriod(_start *big.Int, _operatePeriod *big.Int, _lockupPeriod *big.Int) (*types.Transaction, error) {
+	return _Cunibtcvault.Contract.SetPeriod(&_Cunibtcvault.TransactOpts, _start, _operatePeriod, _lockupPeriod)
+}
+
+// SetPeriod is a paid mutator transaction binding the contract method 0x8feadcb7.
+//
+// Solidity: function setPeriod(uint256 _start, uint256 _operatePeriod, uint256 _lockupPeriod) returns()
+func (_Cunibtcvault *CunibtcvaultTransactorSession) SetPeriod(_start *big.Int, _operatePeriod *big.Int, _lockupPeriod *big.Int) (*types.Transaction, error) {
+	return _Cunibtcvault.Contract.SetPeriod(&_Cunibtcvault.TransactOpts, _start, _operatePeriod, _lockupPeriod)
+}
+
 // StartService is a paid mutator transaction binding the contract method 0x789b5771.
 //
 // Solidity: function startService() returns()
@@ -979,6 +1155,141 @@ func (_Cunibtcvault *CunibtcvaultSession) Receive() (*types.Transaction, error) 
 // Solidity: receive() payable returns()
 func (_Cunibtcvault *CunibtcvaultTransactorSession) Receive() (*types.Transaction, error) {
 	return _Cunibtcvault.Contract.Receive(&_Cunibtcvault.TransactOpts)
+}
+
+// CunibtcvaultCapSetIterator is returned from FilterCapSet and is used to iterate over the raw logs and unpacked data for CapSet events raised by the Cunibtcvault contract.
+type CunibtcvaultCapSetIterator struct {
+	Event *CunibtcvaultCapSet // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *CunibtcvaultCapSetIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(CunibtcvaultCapSet)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(CunibtcvaultCapSet)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *CunibtcvaultCapSetIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *CunibtcvaultCapSetIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// CunibtcvaultCapSet represents a CapSet event raised by the Cunibtcvault contract.
+type CunibtcvaultCapSet struct {
+	Token common.Address
+	Cap   *big.Int
+	Raw   types.Log // Blockchain specific contextual infos
+}
+
+// FilterCapSet is a free log retrieval operation binding the contract event 0x1c9182333abe71fddddd188f90cabb1c34182de0b0ac74c87944a196460a2d6c.
+//
+// Solidity: event CapSet(address token, uint256 cap)
+func (_Cunibtcvault *CunibtcvaultFilterer) FilterCapSet(opts *bind.FilterOpts) (*CunibtcvaultCapSetIterator, error) {
+
+	logs, sub, err := _Cunibtcvault.contract.FilterLogs(opts, "CapSet")
+	if err != nil {
+		return nil, err
+	}
+	return &CunibtcvaultCapSetIterator{contract: _Cunibtcvault.contract, event: "CapSet", logs: logs, sub: sub}, nil
+}
+
+// WatchCapSet is a free log subscription operation binding the contract event 0x1c9182333abe71fddddd188f90cabb1c34182de0b0ac74c87944a196460a2d6c.
+//
+// Solidity: event CapSet(address token, uint256 cap)
+func (_Cunibtcvault *CunibtcvaultFilterer) WatchCapSet(opts *bind.WatchOpts, sink chan<- *CunibtcvaultCapSet) (event.Subscription, error) {
+
+	logs, sub, err := _Cunibtcvault.contract.WatchLogs(opts, "CapSet")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(CunibtcvaultCapSet)
+				if err := _Cunibtcvault.contract.UnpackLog(event, "CapSet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseCapSet is a log parse operation binding the contract event 0x1c9182333abe71fddddd188f90cabb1c34182de0b0ac74c87944a196460a2d6c.
+//
+// Solidity: event CapSet(address token, uint256 cap)
+func (_Cunibtcvault *CunibtcvaultFilterer) ParseCapSet(log types.Log) (*CunibtcvaultCapSet, error) {
+	event := new(CunibtcvaultCapSet)
+	if err := _Cunibtcvault.contract.UnpackLog(event, "CapSet", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
 }
 
 // CunibtcvaultInitializedIterator is returned from FilterInitialized and is used to iterate over the raw logs and unpacked data for Initialized events raised by the Cunibtcvault contract.
@@ -1251,9 +1562,9 @@ func (_Cunibtcvault *CunibtcvaultFilterer) ParseMinted(log types.Log) (*Cunibtcv
 	return event, nil
 }
 
-// CunibtcvaultPausedIterator is returned from FilterPaused and is used to iterate over the raw logs and unpacked data for Paused events raised by the Cunibtcvault contract.
-type CunibtcvaultPausedIterator struct {
-	Event *CunibtcvaultPaused // Event containing the contract specifics and raw log
+// CunibtcvaultPeriodSetIterator is returned from FilterPeriodSet and is used to iterate over the raw logs and unpacked data for PeriodSet events raised by the Cunibtcvault contract.
+type CunibtcvaultPeriodSetIterator struct {
+	Event *CunibtcvaultPeriodSet // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -1267,7 +1578,7 @@ type CunibtcvaultPausedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *CunibtcvaultPausedIterator) Next() bool {
+func (it *CunibtcvaultPeriodSetIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -1276,7 +1587,7 @@ func (it *CunibtcvaultPausedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(CunibtcvaultPaused)
+			it.Event = new(CunibtcvaultPeriodSet)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -1291,7 +1602,7 @@ func (it *CunibtcvaultPausedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(CunibtcvaultPaused)
+		it.Event = new(CunibtcvaultPeriodSet)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -1307,41 +1618,43 @@ func (it *CunibtcvaultPausedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *CunibtcvaultPausedIterator) Error() error {
+func (it *CunibtcvaultPeriodSetIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *CunibtcvaultPausedIterator) Close() error {
+func (it *CunibtcvaultPeriodSetIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// CunibtcvaultPaused represents a Paused event raised by the Cunibtcvault contract.
-type CunibtcvaultPaused struct {
-	Account common.Address
-	Raw     types.Log // Blockchain specific contextual infos
+// CunibtcvaultPeriodSet represents a PeriodSet event raised by the Cunibtcvault contract.
+type CunibtcvaultPeriodSet struct {
+	Start         *big.Int
+	OperatePeriod *big.Int
+	LockupPeriod  *big.Int
+	Raw           types.Log // Blockchain specific contextual infos
 }
 
-// FilterPaused is a free log retrieval operation binding the contract event 0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258.
+// FilterPeriodSet is a free log retrieval operation binding the contract event 0x883b392e4889d0f8c1208781c80d3995a9935c1312f28f7584e611d00aec1359.
 //
-// Solidity: event Paused(address account)
-func (_Cunibtcvault *CunibtcvaultFilterer) FilterPaused(opts *bind.FilterOpts) (*CunibtcvaultPausedIterator, error) {
+// Solidity: event PeriodSet(uint256 start, uint256 operatePeriod, uint256 lockupPeriod)
+func (_Cunibtcvault *CunibtcvaultFilterer) FilterPeriodSet(opts *bind.FilterOpts) (*CunibtcvaultPeriodSetIterator, error) {
 
-	logs, sub, err := _Cunibtcvault.contract.FilterLogs(opts, "Paused")
+	logs, sub, err := _Cunibtcvault.contract.FilterLogs(opts, "PeriodSet")
 	if err != nil {
 		return nil, err
 	}
-	return &CunibtcvaultPausedIterator{contract: _Cunibtcvault.contract, event: "Paused", logs: logs, sub: sub}, nil
+	return &CunibtcvaultPeriodSetIterator{contract: _Cunibtcvault.contract, event: "PeriodSet", logs: logs, sub: sub}, nil
 }
 
-// WatchPaused is a free log subscription operation binding the contract event 0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258.
+// WatchPeriodSet is a free log subscription operation binding the contract event 0x883b392e4889d0f8c1208781c80d3995a9935c1312f28f7584e611d00aec1359.
 //
-// Solidity: event Paused(address account)
-func (_Cunibtcvault *CunibtcvaultFilterer) WatchPaused(opts *bind.WatchOpts, sink chan<- *CunibtcvaultPaused) (event.Subscription, error) {
+// Solidity: event PeriodSet(uint256 start, uint256 operatePeriod, uint256 lockupPeriod)
+func (_Cunibtcvault *CunibtcvaultFilterer) WatchPeriodSet(opts *bind.WatchOpts, sink chan<- *CunibtcvaultPeriodSet) (event.Subscription, error) {
 
-	logs, sub, err := _Cunibtcvault.contract.WatchLogs(opts, "Paused")
+	logs, sub, err := _Cunibtcvault.contract.WatchLogs(opts, "PeriodSet")
 	if err != nil {
 		return nil, err
 	}
@@ -1351,8 +1664,8 @@ func (_Cunibtcvault *CunibtcvaultFilterer) WatchPaused(opts *bind.WatchOpts, sin
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(CunibtcvaultPaused)
-				if err := _Cunibtcvault.contract.UnpackLog(event, "Paused", log); err != nil {
+				event := new(CunibtcvaultPeriodSet)
+				if err := _Cunibtcvault.contract.UnpackLog(event, "PeriodSet", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -1373,12 +1686,12 @@ func (_Cunibtcvault *CunibtcvaultFilterer) WatchPaused(opts *bind.WatchOpts, sin
 	}), nil
 }
 
-// ParsePaused is a log parse operation binding the contract event 0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258.
+// ParsePeriodSet is a log parse operation binding the contract event 0x883b392e4889d0f8c1208781c80d3995a9935c1312f28f7584e611d00aec1359.
 //
-// Solidity: event Paused(address account)
-func (_Cunibtcvault *CunibtcvaultFilterer) ParsePaused(log types.Log) (*CunibtcvaultPaused, error) {
-	event := new(CunibtcvaultPaused)
-	if err := _Cunibtcvault.contract.UnpackLog(event, "Paused", log); err != nil {
+// Solidity: event PeriodSet(uint256 start, uint256 operatePeriod, uint256 lockupPeriod)
+func (_Cunibtcvault *CunibtcvaultFilterer) ParsePeriodSet(log types.Log) (*CunibtcvaultPeriodSet, error) {
+	event := new(CunibtcvaultPeriodSet)
+	if err := _Cunibtcvault.contract.UnpackLog(event, "PeriodSet", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -2935,140 +3248,6 @@ func (_Cunibtcvault *CunibtcvaultFilterer) WatchTokenUnpaused(opts *bind.WatchOp
 func (_Cunibtcvault *CunibtcvaultFilterer) ParseTokenUnpaused(log types.Log) (*CunibtcvaultTokenUnpaused, error) {
 	event := new(CunibtcvaultTokenUnpaused)
 	if err := _Cunibtcvault.contract.UnpackLog(event, "TokenUnpaused", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// CunibtcvaultUnpausedIterator is returned from FilterUnpaused and is used to iterate over the raw logs and unpacked data for Unpaused events raised by the Cunibtcvault contract.
-type CunibtcvaultUnpausedIterator struct {
-	Event *CunibtcvaultUnpaused // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *CunibtcvaultUnpausedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(CunibtcvaultUnpaused)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(CunibtcvaultUnpaused)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *CunibtcvaultUnpausedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *CunibtcvaultUnpausedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// CunibtcvaultUnpaused represents a Unpaused event raised by the Cunibtcvault contract.
-type CunibtcvaultUnpaused struct {
-	Account common.Address
-	Raw     types.Log // Blockchain specific contextual infos
-}
-
-// FilterUnpaused is a free log retrieval operation binding the contract event 0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa.
-//
-// Solidity: event Unpaused(address account)
-func (_Cunibtcvault *CunibtcvaultFilterer) FilterUnpaused(opts *bind.FilterOpts) (*CunibtcvaultUnpausedIterator, error) {
-
-	logs, sub, err := _Cunibtcvault.contract.FilterLogs(opts, "Unpaused")
-	if err != nil {
-		return nil, err
-	}
-	return &CunibtcvaultUnpausedIterator{contract: _Cunibtcvault.contract, event: "Unpaused", logs: logs, sub: sub}, nil
-}
-
-// WatchUnpaused is a free log subscription operation binding the contract event 0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa.
-//
-// Solidity: event Unpaused(address account)
-func (_Cunibtcvault *CunibtcvaultFilterer) WatchUnpaused(opts *bind.WatchOpts, sink chan<- *CunibtcvaultUnpaused) (event.Subscription, error) {
-
-	logs, sub, err := _Cunibtcvault.contract.WatchLogs(opts, "Unpaused")
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(CunibtcvaultUnpaused)
-				if err := _Cunibtcvault.contract.UnpackLog(event, "Unpaused", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseUnpaused is a log parse operation binding the contract event 0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa.
-//
-// Solidity: event Unpaused(address account)
-func (_Cunibtcvault *CunibtcvaultFilterer) ParseUnpaused(log types.Log) (*CunibtcvaultUnpaused, error) {
-	event := new(CunibtcvaultUnpaused)
-	if err := _Cunibtcvault.contract.UnpackLog(event, "Unpaused", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log

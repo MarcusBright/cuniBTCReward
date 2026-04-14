@@ -9,18 +9,74 @@
         "inputs": [
             {
                 "indexed": false,
+                "internalType": "uint256",
+                "name": "oldActivationDelay",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "newActivationDelay",
+                "type": "uint256"
+            }
+        ],
+        "name": "ActivationDelaySet",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "epoch",
+                "type": "uint256"
+            },
+            {
+                "indexed": true,
                 "internalType": "address",
-                "name": "token",
+                "name": "user",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "tokenAddress",
                 "type": "address"
             },
             {
                 "indexed": false,
                 "internalType": "uint256",
-                "name": "cap",
+                "name": "amount",
                 "type": "uint256"
             }
         ],
-        "name": "CapSet",
+        "name": "AirdropClaimed",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "epoch",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "bool",
+                "name": "preStatus",
+                "type": "bool"
+            },
+            {
+                "indexed": false,
+                "internalType": "bool",
+                "name": "status",
+                "type": "bool"
+            }
+        ],
+        "name": "DistributionDisabledSet",
         "type": "event"
     },
     {
@@ -40,25 +96,62 @@
         "anonymous": false,
         "inputs": [
             {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "epoch",
+                "type": "uint256"
+            },
+            {
                 "indexed": false,
-                "internalType": "address",
-                "name": "sender",
-                "type": "address"
+                "internalType": "bytes32",
+                "name": "root",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "rewardsValidTime",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "activatedAt",
+                "type": "uint256"
             },
             {
                 "indexed": false,
                 "internalType": "address",
                 "name": "token",
                 "type": "address"
+            }
+        ],
+        "name": "MerkleRootSubmit",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "epoch",
+                "type": "uint256"
             },
             {
                 "indexed": false,
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
+                "internalType": "bytes32",
+                "name": "preRoot",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "internalType": "bytes32",
+                "name": "root",
+                "type": "bytes32"
             }
         ],
-        "name": "Minted",
+        "name": "MerkleRootUpdate",
         "type": "event"
     },
     {
@@ -66,24 +159,12 @@
         "inputs": [
             {
                 "indexed": false,
-                "internalType": "uint256",
-                "name": "start",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "operatePeriod",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "lockupPeriod",
-                "type": "uint256"
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
             }
         ],
-        "name": "PeriodSet",
+        "name": "Paused",
         "type": "event"
     },
     {
@@ -163,14 +244,27 @@
     },
     {
         "anonymous": false,
-        "inputs": [],
-        "name": "StartService",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [],
-        "name": "StopService",
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "epoch",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "preToken",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "token",
+                "type": "address"
+            }
+        ],
+        "name": "TokenUpdate",
         "type": "event"
     },
     {
@@ -178,77 +272,37 @@
         "inputs": [
             {
                 "indexed": false,
-                "internalType": "address[]",
-                "name": "token",
-                "type": "address[]"
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
             }
         ],
-        "name": "TargetAllowed",
+        "name": "Unpaused",
         "type": "event"
     },
     {
         "anonymous": false,
         "inputs": [
             {
-                "indexed": false,
-                "internalType": "address[]",
-                "name": "token",
-                "type": "address[]"
-            }
-        ],
-        "name": "TargetDenied",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "epoch",
+                "type": "uint256"
+            },
             {
                 "indexed": false,
-                "internalType": "address[]",
-                "name": "token",
-                "type": "address[]"
-            }
-        ],
-        "name": "TokenAllowed",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
+                "internalType": "uint256",
+                "name": "preValidDuration",
+                "type": "uint256"
+            },
             {
                 "indexed": false,
-                "internalType": "address[]",
-                "name": "token",
-                "type": "address[]"
+                "internalType": "uint256",
+                "name": "validDuration",
+                "type": "uint256"
             }
         ],
-        "name": "TokenDenied",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": false,
-                "internalType": "address[]",
-                "name": "token",
-                "type": "address[]"
-            }
-        ],
-        "name": "TokenPaused",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": false,
-                "internalType": "address[]",
-                "name": "token",
-                "type": "address[]"
-            }
-        ],
-        "name": "TokenUnpaused",
+        "name": "ValidDurationUpdate",
         "type": "event"
     },
     {
@@ -259,19 +313,6 @@
                 "internalType": "bytes32",
                 "name": "",
                 "type": "bytes32"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "EXCHANGE_RATE_BASE",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
             }
         ],
         "stateMutability": "view",
@@ -304,45 +345,13 @@
         "type": "function"
     },
     {
-        "inputs": [
-            {
-                "internalType": "address[]",
-                "name": "_targets",
-                "type": "address[]"
-            }
-        ],
-        "name": "allowTarget",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address[]",
-                "name": "_token",
-                "type": "address[]"
-            }
-        ],
-        "name": "allowToken",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "name": "allowedTargetList",
+        "inputs": [],
+        "name": "activationDelay",
         "outputs": [
             {
-                "internalType": "bool",
+                "internalType": "uint256",
                 "name": "",
-                "type": "bool"
+                "type": "uint256"
             }
         ],
         "stateMutability": "view",
@@ -351,88 +360,78 @@
     {
         "inputs": [
             {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "name": "allowedTokenList",
-        "outputs": [
+                "internalType": "uint256",
+                "name": "_amount",
+                "type": "uint256"
+            },
             {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
+                "internalType": "bytes32[]",
+                "name": "_proof",
+                "type": "bytes32[]"
             }
         ],
-        "stateMutability": "view",
+        "name": "claim",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256[]",
+                "name": "_amount",
+                "type": "uint256[]"
+            },
+            {
+                "internalType": "bytes32[][]",
+                "name": "_proof",
+                "type": "bytes32[][]"
+            },
+            {
+                "internalType": "uint256[]",
+                "name": "_epoch",
+                "type": "uint256[]"
+            }
+        ],
+        "name": "claim",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_amount",
+                "type": "uint256"
+            },
+            {
+                "internalType": "bytes32[]",
+                "name": "_proof",
+                "type": "bytes32[]"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_epoch",
+                "type": "uint256"
+            }
+        ],
+        "name": "claim",
+        "outputs": [],
+        "stateMutability": "nonpayable",
         "type": "function"
     },
     {
         "inputs": [],
-        "name": "cuniBTC",
+        "name": "currentEpoch",
         "outputs": [
             {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address[]",
-                "name": "_targets",
-                "type": "address[]"
-            }
-        ],
-        "name": "denyTarget",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address[]",
-                "name": "_token",
-                "type": "address[]"
-            }
-        ],
-        "name": "denyToken",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "_target",
-                "type": "address"
-            },
-            {
-                "internalType": "bytes",
-                "name": "_data",
-                "type": "bytes"
-            },
-            {
                 "internalType": "uint256",
-                "name": "_value",
+                "name": "",
                 "type": "uint256"
             }
         ],
-        "name": "execute",
-        "outputs": [
-            {
-                "internalType": "bytes",
-                "name": "",
-                "type": "bytes"
-            }
-        ],
-        "stateMutability": "nonpayable",
+        "stateMutability": "view",
         "type": "function"
     },
     {
@@ -457,6 +456,52 @@
     {
         "inputs": [
             {
+                "internalType": "uint256",
+                "name": "_epoch",
+                "type": "uint256"
+            }
+        ],
+        "name": "getRoot",
+        "outputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "bytes32",
+                        "name": "root",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "activatedAt",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "duration",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "bool",
+                        "name": "disabled",
+                        "type": "bool"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "token",
+                        "type": "address"
+                    }
+                ],
+                "internalType": "struct Airdrop.Dist",
+                "name": "",
+                "type": "tuple"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
                 "internalType": "bytes32",
                 "name": "role",
                 "type": "bytes32"
@@ -470,6 +515,54 @@
         "name": "grantRole",
         "outputs": [],
         "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_epoch",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address[]",
+                "name": "_users",
+                "type": "address[]"
+            }
+        ],
+        "name": "hasClaimed",
+        "outputs": [
+            {
+                "internalType": "bool[]",
+                "name": "",
+                "type": "bool[]"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_user",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256[]",
+                "name": "_epoch",
+                "type": "uint256[]"
+            }
+        ],
+        "name": "hasClaimed",
+        "outputs": [
+            {
+                "internalType": "bool[]",
+                "name": "",
+                "type": "bool[]"
+            }
+        ],
+        "stateMutability": "view",
         "type": "function"
     },
     {
@@ -499,13 +592,13 @@
     {
         "inputs": [
             {
-                "internalType": "address",
-                "name": "_defaultAdmin",
-                "type": "address"
+                "internalType": "uint256",
+                "name": "_activationDelay",
+                "type": "uint256"
             },
             {
                 "internalType": "address",
-                "name": "_cuniBTC",
+                "name": "_admin",
                 "type": "address"
             }
         ],
@@ -515,109 +608,39 @@
         "type": "function"
     },
     {
-        "inputs": [],
-        "name": "isLockupPeriod",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "isOperatePeriod",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "lockupPeriod",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
         "inputs": [
             {
-                "internalType": "address",
-                "name": "_token",
-                "type": "address"
-            },
-            {
                 "internalType": "uint256",
-                "name": "_amount",
+                "name": "_epoch",
                 "type": "uint256"
             }
         ],
-        "name": "mint",
+        "name": "isActive",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "pause",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
     },
     {
         "inputs": [],
-        "name": "operatePeriod",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "outOfService",
+        "name": "paused",
         "outputs": [
             {
                 "internalType": "bool",
                 "name": "",
                 "type": "bool"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address[]",
-                "name": "_tokens",
-                "type": "address[]"
-            }
-        ],
-        "name": "pauseToken",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "periodRemain",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
             }
         ],
         "stateMutability": "view",
@@ -662,17 +685,17 @@
     {
         "inputs": [
             {
-                "internalType": "address",
-                "name": "_token",
-                "type": "address"
+                "internalType": "bool",
+                "name": "_disabled",
+                "type": "bool"
             },
             {
                 "internalType": "uint256",
-                "name": "_cap",
+                "name": "_epoch",
                 "type": "uint256"
             }
         ],
-        "name": "setCap",
+        "name": "setAirdrop",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -681,48 +704,34 @@
         "inputs": [
             {
                 "internalType": "uint256",
-                "name": "_start",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "_operatePeriod",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "_lockupPeriod",
+                "name": "_activationDelay",
                 "type": "uint256"
             }
         ],
-        "name": "setPeriod",
+        "name": "setDelay",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
     },
     {
-        "inputs": [],
-        "name": "startGenesis",
-        "outputs": [
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "_newRoot",
+                "type": "bytes32"
+            },
             {
                 "internalType": "uint256",
-                "name": "",
+                "name": "_duration",
                 "type": "uint256"
+            },
+            {
+                "internalType": "address",
+                "name": "_token",
+                "type": "address"
             }
         ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "startService",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "stopService",
+        "name": "submitRoot",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -747,71 +756,85 @@
         "type": "function"
     },
     {
+        "inputs": [],
+        "name": "unpause",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
         "inputs": [
             {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "name": "tokenCaps",
-        "outputs": [
+                "internalType": "uint256",
+                "name": "_duration",
+                "type": "uint256"
+            },
             {
                 "internalType": "uint256",
-                "name": "",
+                "name": "_epoch",
                 "type": "uint256"
             }
         ],
-        "stateMutability": "view",
+        "name": "updateDuration",
+        "outputs": [],
+        "stateMutability": "nonpayable",
         "type": "function"
     },
     {
         "inputs": [
             {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "name": "tokenMinted",
-        "outputs": [
+                "internalType": "bytes32",
+                "name": "_newRoot",
+                "type": "bytes32"
+            },
             {
                 "internalType": "uint256",
-                "name": "",
+                "name": "_epoch",
                 "type": "uint256"
             }
         ],
-        "stateMutability": "view",
+        "name": "updateRoot",
+        "outputs": [],
+        "stateMutability": "nonpayable",
         "type": "function"
     },
     {
         "inputs": [
             {
                 "internalType": "address",
-                "name": "",
+                "name": "_token",
                 "type": "address"
-            }
-        ],
-        "name": "tokenPaused",
-        "outputs": [
+            },
             {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
+                "internalType": "uint256",
+                "name": "_epoch",
+                "type": "uint256"
             }
         ],
-        "stateMutability": "view",
+        "name": "updateToken",
+        "outputs": [],
+        "stateMutability": "nonpayable",
         "type": "function"
     },
     {
         "inputs": [
             {
-                "internalType": "address[]",
-                "name": "_tokens",
-                "type": "address[]"
+                "internalType": "address",
+                "name": "_token",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "_to",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_amount",
+                "type": "uint256"
             }
         ],
-        "name": "unpauseToken",
+        "name": "withdraw",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"

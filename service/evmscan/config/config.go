@@ -23,7 +23,6 @@ type EvmClient struct {
 }
 
 type ChainInfo struct {
-	Client            EvmClient
-	CuniBTCVault      string
-	DelayRedeemRouter string
+	Client  EvmClient
+	Factory string
 }
