@@ -4,7 +4,7 @@ Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	calcconfig "cuniBTCReward/service/calcamount/config"
+	airdropconfig "cuniBTCReward/service/airdrop/config"
 	evmscanconfig "cuniBTCReward/service/evmscan/config"
 	"os"
 
@@ -57,5 +57,5 @@ type ServiceConfig struct {
 	NotifySlack string `json:",optional,inherit"`
 	LogSlack    string `json:",optional,inherit"`
 	EvmScanConf evmscanconfig.EvmScanConf
-	CalcConf    calcconfig.CalcConf
+	AirdropConf airdropconfig.AirdropConf
 }

@@ -1,4 +1,4 @@
-package calcamount
+package airdrop
 
 import (
 	"cuniBTCReward/model"

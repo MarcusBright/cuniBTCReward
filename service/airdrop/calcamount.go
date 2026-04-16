@@ -1,11 +1,11 @@
-package calcamount
+package airdrop
 
 import (
 	"context"
 	"cuniBTCReward/clientrpc/goeth"
 	"cuniBTCReward/model"
 	"cuniBTCReward/pkg/gormz"
-	"cuniBTCReward/service/calcamount/config"
+	"cuniBTCReward/service/airdrop/config"
 	"fmt"
 	"math/big"
 
@@ -56,31 +56,29 @@ func CalcAvgAmount(startAmount decimal.Decimal, transactions []*model.EvmTransac
 	return weightedSum.Div(decimal.NewFromInt(int64(totalBlocks))).Floor(), nil
 }
 
-type Calulator struct {
+type Airdrop struct {
 	database   *gorm.DB
-	config     *config.CalcConf
+	config     *config.AirdropConf
 	evmClients map[uint]*EvmClient
 }
 type EvmClient struct {
-	Client  *ethclient.Client
-	CuniBTC string
+	Client *ethclient.Client
 }
 
-func NewCalulator(c *config.CalcConf) *Calulator {
+func NewAirdrop(c *config.AirdropConf) *Airdrop {
 	db, err := gorm.Open(mysql.Open(c.DataSource))
 	if c.SqlLog {
 		db.Logger = gormz.NewGormLogger()
 	}
 	logx.Must(err)
 
-	return &Calulator{
+	return &Airdrop{
 		database: db,
 		config:   c,
 		evmClients: lo.SliceToMap(c.ChainInfo, func(item config.ChainInfo) (uint, *EvmClient) {
 			client := goeth.NewClient(item.Client.Host, item.Client.Request, item.Client.PeriodSec)
 			return item.Client.ChainId, &EvmClient{
-				Client:  client,
-				CuniBTC: item.CuniBTC,
+				Client: client,
 			}
 		}),
 	}
@@ -91,14 +89,14 @@ type AvgAmountResult struct {
 	AvgAmount decimal.Decimal
 }
 
-func (c *Calulator) GetCursor(chainid uint) (*model.Cursor, error) {
+func (a *Airdrop) GetCursor(chainid uint) (*model.Cursor, error) {
 	var cursor model.Cursor
-	err := c.database.Model(&model.Cursor{}).Where("chain_id = ?", chainid).First(&cursor).Error
+	err := a.database.Model(&model.Cursor{}).Where("chain_id = ?", chainid).First(&cursor).Error
 	return &cursor, err
 }
 
-func (c *Calulator) GetAvgAmount(startBlock, endBlock uint64, chainId uint) (result []AvgAmountResult, err error) {
-	startAmount, err := c.getAllAddressStartAmount(startBlock, chainId)
+func (a *Airdrop) GetAvgAmount(startBlock, endBlock uint64, chainId uint, contract []string, token string) (result []AvgAmountResult, err error) {
+	startAmount, err := a.getAllAddressStartAmount(startBlock, chainId, contract, token)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +104,7 @@ func (c *Calulator) GetAvgAmount(startBlock, endBlock uint64, chainId uint) (res
 		if item.AvgAmount.IsNegative() {
 			return nil, fmt.Errorf("startAmount[%s] is negative for address[%s]", item.AvgAmount.String(), item.Address)
 		}
-		transactions, err := c.getAddressTransactions(item.Address, startBlock, endBlock, chainId)
+		transactions, err := a.getAddressTransactions(item.Address, startBlock, endBlock, chainId)
 		if err != nil {
 			return nil, err
 		}
@@ -122,17 +120,18 @@ func (c *Calulator) GetAvgAmount(startBlock, endBlock uint64, chainId uint) (res
 	return
 }
 
-func (c *Calulator) getAllAddressStartAmount(startBlock uint64, chainId uint) (result []AvgAmountResult, err error) {
+func (a *Airdrop) getAllAddressStartAmount(startBlock uint64, chainId uint, contract []string, token string) (result []AvgAmountResult, err error) {
 	var distinctAddresses []string
-	ret := c.database.Model(&model.EvmTransaction{}).Distinct("address").
+	ret := a.database.Model(&model.EvmTransaction{}).Distinct("address").
 		Where("chain_id = ?", chainId).Pluck("address", &distinctAddresses)
 	if ret.Error != nil {
 		return nil, ret.Error
 	}
 
 	var addressAmounts []AvgAmountResult
-	ret = c.database.Model(&model.EvmTransaction{}).Select("address, sum(amount) as avg_amount").
-		Where("chain_id = ? and block_number < ?", chainId, startBlock).Group("address").Scan(&addressAmounts)
+	ret = a.database.Model(&model.EvmTransaction{}).Select("address, sum(amount) as avg_amount").
+		Where("chain_id = ? and block_number < ? and contract in (?) and token = ?", chainId, startBlock, contract, token).
+		Group("address").Scan(&addressAmounts)
 	if ret.Error != nil {
 		return nil, ret.Error
 	}
@@ -153,7 +152,7 @@ func (c *Calulator) getAllAddressStartAmount(startBlock uint64, chainId uint) (r
 	return
 }
 
-func (c *Calulator) getAddressTransactions(address string, startBlock, endBlock uint64, chainId uint) (result []*model.EvmTransaction, err error) {
+func (c *Airdrop) getAddressTransactions(address string, startBlock, endBlock uint64, chainId uint) (result []*model.EvmTransaction, err error) {
 	ret := c.database.Model(&model.EvmTransaction{}).
 		Where("chain_id = ? and address = ? and block_number >= ? and block_number <= ?", chainId, address, startBlock, endBlock).
 		Order("block_number").
@@ -164,17 +163,18 @@ func (c *Calulator) getAddressTransactions(address string, startBlock, endBlock 
 	return
 }
 
-func (c *Calulator) GetAllAddressAtBlock(blockNumber uint64, chainId uint, balanceCheck bool) (result []AvgAmountResult, err error) {
+func (c *Airdrop) GetAllAddressAtBlock(blockNumber uint64, chainId uint, balanceCheck bool, contract []string, token string) (result []AvgAmountResult, err error) {
 	//sum amount for each address where block_number <= blockNumber, group by address
 	ret := c.database.Model(&model.EvmTransaction{}).Select("address, sum(amount) as avg_amount").
-		Where("chain_id = ? and block_number <= ?", chainId, blockNumber).Group("address").Scan(&result)
+		Where("chain_id = ? and block_number <= ? and contract in (?) and token = ?", chainId, blockNumber, contract, token).
+		Group("address").Scan(&result)
 	if ret.Error != nil {
 		return nil, ret.Error
 	}
 
 	if balanceCheck {
 		for _, item := range result {
-			balance, err := c.GetTokenBalanceAtBlock(item.Address, blockNumber, chainId)
+			balance, err := c.GetTokenBalanceAtBlock(item.Address, blockNumber, chainId, token)
 			if err != nil {
 				return nil, fmt.Errorf("get token balance at block failed for address[%s], err: %v", item.Address, err)
 			}
@@ -187,13 +187,13 @@ func (c *Calulator) GetAllAddressAtBlock(blockNumber uint64, chainId uint, balan
 	return
 }
 
-func (c *Calulator) GetTokenBalanceAtBlock(address string, blockNumber uint64, chainId uint) (decimal.Decimal, error) {
+func (c *Airdrop) GetTokenBalanceAtBlock(address string, blockNumber uint64, chainId uint, token string) (decimal.Decimal, error) {
 	evmClient, ok := c.evmClients[chainId]
 	if !ok {
 		return decimal.Zero, fmt.Errorf("evm client not found for chainId[%d]", chainId)
 	}
-	tokenAddress := common.HexToAddress(c.evmClients[chainId].CuniBTC) // ERC20 Contract
-	walletAddress := common.HexToAddress(address)                      // User Wallet
+	tokenAddress := common.HexToAddress(token)    // ERC20 Contract
+	walletAddress := common.HexToAddress(address) // User Wallet
 
 	// 1. Prepare balanceOf(address) signature
 	transferFnSignature := []byte("balanceOf(address)")

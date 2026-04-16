@@ -8,6 +8,7 @@ node_modules/
 # Ignore build artifacts
 dist/
 *.exe
+*.csv
 
 # Ignore OS temporary files
 .DS_Store

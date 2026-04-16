@@ -26,6 +26,7 @@ type EvmTransaction struct {
 	Hash    string `gorm:"size:255;index:t_address_chainid_hash"`
 	// Contract is the contract address of this transaction, such as cuniBTC or redeemRouter, each stategy.
 	Contract       string `gorm:"size:255;index:t_address_chainid_hash"`
+	Token          string `gorm:"size:255"`
 	BlockNumber    uint64 `gorm:"default:0;index:t_blocknumber"`
 	BlockTimestamp uint64 `gorm:"default:0;index:t_blocktimestamp"`
 	// + for income, - for outcome

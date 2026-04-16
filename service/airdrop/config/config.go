@@ -1,10 +1,10 @@
 package config
 
 type Config struct {
-	CalcConf
+	AirdropConf
 }
 
-type CalcConf struct {
+type AirdropConf struct {
 	Name        string `json:",optional,inherit"`
 	DataSource  string `json:",inherit"`
 	SqlLog      bool   `json:",optional,default=false,inherit"`
@@ -22,6 +22,5 @@ type EvmClient struct {
 }
 
 type ChainInfo struct {
-	Client  EvmClient
-	CuniBTC string
+	Client EvmClient
 }
