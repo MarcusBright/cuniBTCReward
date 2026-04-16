@@ -27,6 +27,7 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type Scanner struct {
@@ -105,13 +106,8 @@ func (s *Scanner) LogScan() {
 		}
 		logx.Infof("chain: %v, fetched factoryLogs: %v", chain.Client.ChainId, len(factoryLogs))
 		// Process Factory events
-		newStrategy, err := s.processFactoryLog(factoryLogs, chain, s.evmClients[k])
-		if err != nil {
+		if err := s.processFactoryLog(factoryLogs, chain, s.evmClients[k]); err != nil {
 			logx.Errorf("processFactoryLog error, err: %v", err)
-			continue
-		}
-		if newStrategy {
-			logx.Info("strategy created, reLogs")
 			continue
 		}
 
@@ -319,17 +315,16 @@ func isAirDrop(address common.Address, strategies []model.Strategy) bool {
 	return false
 }
 
-func (s *Scanner) processFactoryLog(logs []types.Log, chainInfo config.ChainInfo, evmClient *EvmClient) (bool, error) {
-	hasNewCreate := false
+func (s *Scanner) processFactoryLog(logs []types.Log, chainInfo config.ChainInfo, evmClient *EvmClient) error {
 	for _, log := range logs {
 		if log.Removed {
 			logx.Errorf("log removed, hash:%v, blockNumber:%v, blockHash:%v", log.TxHash, log.BlockNumber, log.BlockHash)
-			return false, fmt.Errorf("log removed")
+			return fmt.Errorf("log removed")
 		}
 		transactionRecipient, err := evmClient.Client.TransactionReceipt(context.Background(), log.TxHash)
 		if err != nil {
 			logx.Errorf("get transaction receipt failed, err: %v", err)
-			return false, err
+			return err
 		}
 		if transactionRecipient.Status != types.ReceiptStatusSuccessful {
 			logx.Infof("transaction status not successful, hash: %v, status: %v", log.TxHash.Hex(), transactionRecipient.Status)
@@ -338,14 +333,14 @@ func (s *Scanner) processFactoryLog(logs []types.Log, chainInfo config.ChainInfo
 		eventName, err := s.factoryAbi.EventByID(log.Topics[0])
 		if err != nil {
 			logx.Errorf("get event name failed, maybe upgraded hash: %v, err: %v", log.TxHash, err)
-			return false, nil
+			return nil
 		}
 		switch eventName.Name {
 		case "StrategyCreate":
 			newStrategyEvent, err := evmClient.Factory.ParseStrategyCreate(log)
 			if err != nil {
 				logx.Errorf("parse new strategy event failed, err: %v", err)
-				return false, err
+				return err
 			}
 			strategy := &model.Strategy{
 				ChainId:           chainInfo.Client.ChainId,
@@ -356,24 +351,14 @@ func (s *Scanner) processFactoryLog(logs []types.Log, chainInfo config.ChainInfo
 				DelayRedeemRouter: newStrategyEvent.Strategy.DelayRedeemRouter.String(),
 				Airdrop:           newStrategyEvent.Strategy.Airdrop.String(),
 			}
-			//find or create
-			strategyInDb := []model.Strategy{}
-			if err := s.database.Where("chain_id = ? AND name = ? AND symbol = ?", strategy.ChainId, strategy.Name, strategy.Symbol).
-				Limit(1).Find(&strategyInDb).Error; err != nil {
-				logx.Errorf("query strategy failed, err: %v", err)
-				return false, err
-			}
-			if len(strategyInDb) == 0 {
-				slack.SendTo(s.config.NotifySlack, fmt.Sprintf("[%s] New strategy created: %s, symbol: %s, vault: %s", s.config.Name, strategy.Name, strategy.Symbol, strategy.Vault))
-				hasNewCreate = true
-				if err := s.database.Create(&strategy).Error; err != nil {
-					logx.Errorf("create strategy failed, err: %v", err)
-					return hasNewCreate, err
-				}
+			slack.SendTo(s.config.NotifySlack, fmt.Sprintf("[%s] New strategy created: %s, symbol: %s, vault: %s", s.config.Name, strategy.Name, strategy.Symbol, strategy.Vault))
+			if err := s.database.Clauses(clause.OnConflict{DoNothing: true}).Create(&strategy).Error; err != nil {
+				logx.Errorf("create strategy failed, err: %v", err)
+				return err
 			}
 		}
 	}
-	return hasNewCreate, nil
+	return nil
 }
 
 func (s *Scanner) processCuniBTCVaultLog(log types.Log, chainInfo config.ChainInfo, evmClient *EvmClient, tx *gorm.DB) error {
