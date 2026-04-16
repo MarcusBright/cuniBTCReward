@@ -26,7 +26,7 @@ func NewGormLogger() *GormLogger {
 var _ logger.Interface = (*GormLogger)(nil)
 
 func (g *GormLogger) LogMode(lev logger.LogLevel) logger.Interface {
-	// logx.SetLevel()
+	logx.SetLevel(uint32(lev))
 	return g
 }
 
@@ -42,7 +42,7 @@ func (g *GormLogger) Error(ctx context.Context, msg string, data ...any) {
 	g.log.WithContext(ctx).Errorf(msg, data)
 }
 
-func (g *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error) {
+func (g *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
 	elapsed := time.Since(begin)
 	sql, rows := fc()
 	logFields := []logx.LogField{
@@ -52,14 +52,14 @@ func (g *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (sql 
 	}
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			g.log.WithContext(ctx).Infow("sql ErrRecordNotFound", logFields...)
+			g.log.WithContext(ctx).Infof("%v", logFields)
 		} else {
 			logFields = append(logFields, logx.Field("catch error", err))
-			g.log.WithContext(ctx).Errorw("sql error", logFields...)
+			g.log.WithContext(ctx).Infof("%v", logFields)
 		}
 	}
 	if g.slowThreshold != 0 && elapsed > g.slowThreshold {
-		g.log.WithContext(ctx).Sloww("sql slow", logFields...)
+		g.log.WithContext(ctx).Slowf("%v", logFields)
 	}
-	g.log.WithContext(ctx).Infow("sql query", logFields...)
+	g.log.WithContext(ctx).Infof("%v", logFields)
 }

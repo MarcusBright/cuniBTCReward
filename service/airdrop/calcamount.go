@@ -66,10 +66,11 @@ type EvmClient struct {
 }
 
 func NewAirdrop(c *config.AirdropConf) *Airdrop {
-	db, err := gorm.Open(mysql.Open(c.DataSource))
+	gormConfig := &gorm.Config{}
 	if c.SqlLog {
-		db.Logger = gormz.NewGormLogger()
+		gormConfig.Logger = gormz.NewGormLogger()
 	}
+	db, err := gorm.Open(mysql.Open(c.DataSource), gormConfig)
 	logx.Must(err)
 
 	return &Airdrop{
@@ -131,7 +132,7 @@ func (a *Airdrop) getAllAddressStartAmount(startBlock uint64, chainId uint, cont
 	var addressAmounts []AvgAmountResult
 	ret = a.database.Model(&model.EvmTransaction{}).Select("address, sum(amount) as avg_amount").
 		Where("chain_id = ? and block_number < ? and contract in (?) and token = ?", chainId, startBlock, contract, token).
-		Group("address").Scan(&addressAmounts)
+		Group("address").Order("address").Scan(&addressAmounts)
 	if ret.Error != nil {
 		return nil, ret.Error
 	}
@@ -167,7 +168,7 @@ func (c *Airdrop) GetAllAddressAtBlock(blockNumber uint64, chainId uint, balance
 	//sum amount for each address where block_number <= blockNumber, group by address
 	ret := c.database.Model(&model.EvmTransaction{}).Select("address, sum(amount) as avg_amount").
 		Where("chain_id = ? and block_number <= ? and contract in (?) and token = ?", chainId, blockNumber, contract, token).
-		Group("address").Scan(&result)
+		Group("address").Order("address").Scan(&result)
 	if ret.Error != nil {
 		return nil, ret.Error
 	}

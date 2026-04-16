@@ -7,12 +7,13 @@ import (
 	"cuniBTCReward/pkg/slack"
 	"cuniBTCReward/service/airdrop"
 	"encoding/csv"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/shopspring/decimal"
 	"github.com/spf13/cobra"
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -40,6 +41,7 @@ var token string
 var file string
 var epoch uint64
 var contract string
+var dryRun bool
 
 func init() {
 	rootCmd.AddCommand(airdropCmd)
@@ -68,6 +70,8 @@ func init() {
 	_ = airdropCreateCmd.MarkFlagRequired("file")
 	airdropCreateCmd.Flags().Uint64VarP(&epoch, "epoch", "e", 0, "epoch number for the airdrop")
 	_ = airdropCreateCmd.MarkFlagRequired("epoch")
+	airdropCreateCmd.Flags().BoolVarP(&dryRun, "dryrun", "d", false, "whether to run in dry run mode")
+
 }
 
 // sharesCmd represents the shares command
@@ -171,6 +175,14 @@ to quickly create a Cobra application.`,
 				fmt.Println("Invalid record:", record)
 				return
 			}
+			if record[0] == "" || record[1] == "" {
+				fmt.Println("Empty address or amount in record:", record)
+				return
+			}
+			if amount, err := decimal.NewFromString(record[1]); err != nil || amount.IsNegative() || amount.IsZero() {
+				fmt.Println("Invalid amount in record:", record)
+				return
+			}
 			leaves = append(leaves, airdrop.TreeLeaf{
 				Address: record[0],
 				Amount:  record[1],
@@ -182,13 +194,13 @@ to quickly create a Cobra application.`,
 		}
 
 		airdropIns := airdrop.NewAirdrop(&c.AirdropConf)
-		root, err := airdropIns.CreateAirdropEpoch(chainId, contract, epoch, leaves)
+		root, err := airdropIns.CreateAirdropEpoch(chainId, contract, epoch, leaves, dryRun)
 		if err != nil {
 			slack.SendTo(c.AirdropConf.NotifySlack, fmt.Sprintf("[%s] %v", c.AirdropConf.Name, err))
 			fmt.Println(err)
 			return
 		}
 		fmt.Printf("Airdrop epoch created successfully, length of leaves: %d\n", len(leaves))
-		fmt.Printf("Epoch: %d, Contract: %s, Root: %s\n", epoch, contract, hex.EncodeToString(root))
+		fmt.Printf("Epoch: %d, Contract: %s, Root: %s\n", epoch, contract, hexutil.Encode(root))
 	},
 }

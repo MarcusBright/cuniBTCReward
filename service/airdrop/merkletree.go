@@ -31,7 +31,7 @@ func GetMerkleRootAndProof(leaves []TreeLeaf) (*smt.StandardTree, error) {
 	return smt.Of(values, leafEncodings)
 }
 
-func (a *Airdrop) CreateAirdropEpoch(chainId uint, contract string, epoch uint64, leaves []TreeLeaf) ([]byte, error) {
+func (a *Airdrop) CreateAirdropEpoch(chainId uint, contract string, epoch uint64, leaves []TreeLeaf, dryRun bool) ([]byte, error) {
 	if len(leaves) == 0 {
 		return nil, fmt.Errorf("leaves is empty")
 	}
@@ -86,8 +86,10 @@ func (a *Airdrop) CreateAirdropEpoch(chainId uint, contract string, epoch uint64
 		return nil, err
 	}
 
-	if err := a.database.CreateInBatches(airdropRecords, 500).Error; err != nil {
-		return nil, err
+	if !dryRun {
+		if err := a.database.CreateInBatches(airdropRecords, 500).Error; err != nil {
+			return nil, err
+		}
 	}
 	return tree.GetRoot(), nil
 }

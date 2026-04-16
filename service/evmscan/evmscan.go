@@ -11,7 +11,6 @@ import (
 	"cuniBTCReward/service/contract/delayredeemrouter"
 	"cuniBTCReward/service/contract/factory"
 	"cuniBTCReward/service/evmscan/config"
-	"encoding/hex"
 	"fmt"
 	"math/big"
 	"time"
@@ -20,6 +19,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind/v2"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/samber/lo"
@@ -46,10 +46,11 @@ type EvmClient struct {
 }
 
 func NewScanner(c *config.EvmScanConf) *Scanner {
-	db, err := gorm.Open(mysql.Open(c.DataSource))
+	gormConfig := &gorm.Config{}
 	if c.SqlLog {
-		db.Logger = gormz.NewGormLogger()
+		gormConfig.Logger = gormz.NewGormLogger()
 	}
+	db, err := gorm.Open(mysql.Open(c.DataSource), gormConfig)
 	logx.Must(err)
 
 	evmClients := lo.Map(c.ChainInfo, func(item config.ChainInfo, index int) *EvmClient {
@@ -441,16 +442,13 @@ func (s *Scanner) processAirDropLog(log types.Log, chainInfo config.ChainInfo, e
 			logx.Errorf("parse air drop claimed event failed, err: %v", err)
 			return err
 		}
-		return tx.Create(&model.AirDropRecord{
-			ChainId:  chainInfo.Client.ChainId,
-			Contract: log.Address.String(),
-			Epoch:    uint64(claimedEvent.Epoch.Int64()),
-			Address:  claimedEvent.User.String(),
-			Amount:   decimal.NewFromBigInt(claimedEvent.Amount, 0),
-			Claimed:  true,
-			ClaimTx:  log.TxHash.String(),
-			ClaimAt:  time.Unix(int64(log.BlockTimestamp), 0),
-		}).Error
+		return tx.Model(&model.AirDropRecord{}).Where("chain_id = ? AND contract = ? AND epoch = ? AND address = ?",
+			chainInfo.Client.ChainId, log.Address.String(), claimedEvent.Epoch.Uint64(), claimedEvent.User.String()).
+			Updates(map[string]interface{}{
+				"claimed":  true,
+				"claim_tx": log.BlockHash.String(),
+				"claim_at": time.Unix(int64(log.BlockTimestamp), 0),
+			}).Error
 	case "MerkleRootSubmit":
 		rootEvent, err := airDrop.ParseMerkleRootSubmit(log)
 		if err != nil {
@@ -459,10 +457,14 @@ func (s *Scanner) processAirDropLog(log types.Log, chainInfo config.ChainInfo, e
 		}
 		slack.SendTo(s.config.NotifySlack, fmt.Sprintf("[%s] New merkle root submitted for vault: %s, epoch: %d", s.config.Name, log.Address.String(), rootEvent.Epoch.Int64()))
 		return tx.Create(&model.AirDropEpoch{
-			ChainId:  chainInfo.Client.ChainId,
-			Contract: log.Address.String(),
-			Epoch:    uint64(rootEvent.Epoch.Int64()),
-			Root:     hex.EncodeToString(rootEvent.Root[:]),
+			ChainId:   chainInfo.Client.ChainId,
+			Contract:  log.Address.String(),
+			Epoch:     uint64(rootEvent.Epoch.Int64()),
+			Root:      hexutil.Encode(rootEvent.Root[:]),
+			Token:     rootEvent.Token.String(),
+			ValidTime: rootEvent.RewardsValidTime.Uint64(),
+			ActiveAt:  time.Unix(int64(rootEvent.ActivatedAt.Uint64()), 0),
+			Disabled:  false,
 		}).Error
 	case "MerkleRootUpdate":
 		rootUpdateEvent, err := airDrop.ParseMerkleRootUpdate(log)
@@ -472,9 +474,8 @@ func (s *Scanner) processAirDropLog(log types.Log, chainInfo config.ChainInfo, e
 		}
 		slack.SendTo(s.config.NotifySlack, fmt.Sprintf("[%s] Merkle root updated for vault: %s, epoch: %d", s.config.Name, log.Address.String(), rootUpdateEvent.Epoch.Int64()))
 		return tx.Model(&model.AirDropEpoch{}).Where("chain_id = ? AND contract = ? AND epoch = ?",
-			chainInfo.Client.ChainId, log.Address, rootUpdateEvent.Epoch).
-			Update("root", hex.EncodeToString(rootUpdateEvent.Root[:])).Error
-
+			chainInfo.Client.ChainId, log.Address.String(), rootUpdateEvent.Epoch.Uint64()).
+			Updates(map[string]interface{}{"root": hexutil.Encode(rootUpdateEvent.Root[:])}).Error
 	case "TokenUpdate":
 		tokenUpdateEvent, err := airDrop.ParseTokenUpdate(log)
 		if err != nil {
@@ -483,28 +484,30 @@ func (s *Scanner) processAirDropLog(log types.Log, chainInfo config.ChainInfo, e
 		}
 		slack.SendTo(s.config.NotifySlack, fmt.Sprintf("[%s] Token updated for vault: %s, epoch: %d", s.config.Name, log.Address.String(), tokenUpdateEvent.Epoch.Int64()))
 		return tx.Model(&model.AirDropEpoch{}).Where("chain_id = ? AND contract = ? AND epoch = ?",
-			chainInfo.Client.ChainId, log.Address, tokenUpdateEvent.Epoch).
-			Update("token", tokenUpdateEvent.Token.String()).Error
+			chainInfo.Client.ChainId, log.Address.String(), tokenUpdateEvent.Epoch.Uint64()).
+			Updates(map[string]interface{}{"token": tokenUpdateEvent.Token.String()}).Error
 	case "ValidDurationUpdate":
 		durationUpdateEvent, err := airDrop.ParseValidDurationUpdate(log)
 		if err != nil {
 			logx.Errorf("parse valid duration update event failed, err: %v", err)
 			return err
 		}
-		slack.SendTo(s.config.NotifySlack, fmt.Sprintf("[%s] Valid duration updated for vault: %s, epoch: %d", s.config.Name, log.Address.String(), durationUpdateEvent.Epoch.Int64()))
+		slack.SendTo(s.config.NotifySlack, fmt.Sprintf("[%s] Valid duration updated for vault: %s, epoch: %d", s.config.Name,
+			log.Address.String(), durationUpdateEvent.Epoch.Int64()))
 		return tx.Model(&model.AirDropEpoch{}).Where("chain_id = ? AND contract = ? AND epoch = ?",
-			chainInfo.Client.ChainId, log.Address, durationUpdateEvent.Epoch).
-			Update("valid_time", durationUpdateEvent.ValidDuration).Error
+			chainInfo.Client.ChainId, log.Address.String(), durationUpdateEvent.Epoch.Uint64()).
+			Updates(map[string]interface{}{"valid_time": durationUpdateEvent.ValidDuration.Uint64()}).Error
 	case "DistributionDisabledSet":
 		disabledEvent, err := airDrop.ParseDistributionDisabledSet(log)
 		if err != nil {
 			logx.Errorf("parse distribution disabled set event failed, err: %v", err)
 			return err
 		}
-		slack.SendTo(s.config.NotifySlack, fmt.Sprintf("[%s] Distribution disabled set for vault: %s, epoch: %d", s.config.Name, log.Address.String(), disabledEvent.Epoch.Int64()))
+		slack.SendTo(s.config.NotifySlack, fmt.Sprintf("[%s] Distribution disabled set for vault: %s, epoch: %d, status: %t",
+			s.config.Name, log.Address.String(), disabledEvent.Epoch.Int64(), disabledEvent.Status))
 		return tx.Model(&model.AirDropEpoch{}).Where("chain_id = ? AND contract = ? AND epoch = ?",
-			chainInfo.Client.ChainId, log.Address, disabledEvent.Epoch).
-			Update("disabled", disabledEvent.Status).Error
+			chainInfo.Client.ChainId, log.Address.String(), disabledEvent.Epoch.Uint64()).
+			Updates(map[string]interface{}{"disabled": disabledEvent.Status}).Error
 	}
 	return nil
 }
@@ -514,7 +517,7 @@ func (s *Scanner) getScanRange(client *ethclient.Client, cursorBlock uint64) (in
 	if err != nil {
 		return 0, 0, err
 	}
-	latestBlockNumber = latestBlockNumber - 30 //delay block
+	latestBlockNumber = latestBlockNumber - 1 //delay block
 	needScanBlocksNumber := int64(latestBlockNumber) - int64(cursorBlock)
 	if needScanBlocksNumber <= 0 {
 		return 0, 0, nil
