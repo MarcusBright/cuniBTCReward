@@ -421,8 +421,10 @@ func (s *Scanner) processDelayRedeemRouterLog(log types.Log, chainInfo config.Ch
 			Token:          redeemCreatedEvent.Token.String(),
 			BlockNumber:    log.BlockNumber,
 			BlockTimestamp: log.BlockTimestamp,
-			Amount:         decimal.NewFromBigInt(redeemCreatedEvent.Amount, 0).Neg(),
-			LogMethod:      "DelayedRedeemCreated",
+			Amount: decimal.NewFromBigInt(redeemCreatedEvent.Amount, 0).
+				Add(decimal.NewFromBigInt(redeemCreatedEvent.RedeemFee, 0)).
+				Neg(),
+			LogMethod: "DelayedRedeemCreated",
 		}).Error
 	}
 	return nil

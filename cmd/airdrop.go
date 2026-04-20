@@ -108,8 +108,8 @@ to quickly create a Cobra application.`,
 		if block == 0 {
 			block = getBlock.BlockNumber
 		}
-		if block < getBlock.BlockNumber {
-			fmt.Printf("block number [%d] is less than current cursor block number [%d], no need to check\n", block, getBlock.BlockNumber)
+		if block > getBlock.BlockNumber {
+			fmt.Printf("block number [%d] is greater than current cursor block number [%d], no need to check\n", block, getBlock.BlockNumber)
 			return
 		}
 		fmt.Printf("Block: %d, Chain ID: %d, Check Balance: %t\n", block, chainId, checkBalance)
