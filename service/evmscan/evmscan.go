@@ -413,7 +413,8 @@ func (s *Scanner) processDelayRedeemRouterLog(log types.Log, chainInfo config.Ch
 			logx.Errorf("parse delayed redeem created event failed, err: %v", err)
 			return err
 		}
-		return tx.Create(&model.EvmTransaction{
+
+		if err := tx.Create(&model.EvmTransaction{
 			Address:        redeemCreatedEvent.Recipient.String(),
 			ChainId:        chainInfo.Client.ChainId,
 			Hash:           log.TxHash.String(),
@@ -425,7 +426,39 @@ func (s *Scanner) processDelayRedeemRouterLog(log types.Log, chainInfo config.Ch
 				Add(decimal.NewFromBigInt(redeemCreatedEvent.RedeemFee, 0)).
 				Neg(),
 			LogMethod: "DelayedRedeemCreated",
-		}).Error
+		}).Error; err != nil {
+			return err
+		}
+		if err := tx.Create(&model.DelayRedeemRecord{
+			ChainId:         chainInfo.Client.ChainId,
+			Address:         redeemCreatedEvent.Recipient.String(),
+			Contract:        log.Address.String(),
+			Token:           redeemCreatedEvent.Token.String(),
+			Amount:          decimal.NewFromBigInt(redeemCreatedEvent.Amount, 0),
+			Fee:             decimal.NewFromBigInt(redeemCreatedEvent.RedeemFee, 0),
+			CreateHash:      log.TxHash.String(),
+			CreateBlockTime: time.Unix(int64(log.BlockTimestamp), 0),
+			Claimed:         false,
+			ClaimTx:         "",
+			ClaimAt:         time.Unix(0, 0),
+			Index:           redeemCreatedEvent.Index.Uint64(),
+		}).Error; err != nil {
+			return err
+		}
+	case "DelayedRedeemsCompleted":
+		redeemCompleteEvent, err := redeemRouter.ParseDelayedRedeemsCompleted(log)
+		if err != nil {
+			logx.Errorf("parse delayed redeem completed event failed, err: %v", err)
+			return err
+		}
+		return tx.Model(&model.DelayRedeemRecord{}).Where("chain_id = ? AND contract = ? AND address = ? AND `index` < ?",
+			chainInfo.Client.ChainId, log.Address.String(), redeemCompleteEvent.Recipient.String(),
+			redeemCompleteEvent.DelayedRedeemsCompleted.Uint64()).
+			Updates(map[string]interface{}{
+				"claimed":  true,
+				"claim_tx": log.TxHash.String(),
+				"claim_at": time.Unix(int64(log.BlockTimestamp), 0),
+			}).Error
 	}
 	return nil
 }
@@ -448,7 +481,7 @@ func (s *Scanner) processAirDropLog(log types.Log, chainInfo config.ChainInfo, e
 			chainInfo.Client.ChainId, log.Address.String(), claimedEvent.Epoch.Uint64(), claimedEvent.User.String()).
 			Updates(map[string]interface{}{
 				"claimed":  true,
-				"claim_tx": log.BlockHash.String(),
+				"claim_tx": log.TxHash.String(),
 				"claim_at": time.Unix(int64(log.BlockTimestamp), 0),
 			}).Error
 	case "MerkleRootSubmit":

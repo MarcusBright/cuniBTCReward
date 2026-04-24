@@ -173,68 +173,6 @@
         "inputs": [
             {
                 "indexed": false,
-                "internalType": "address",
-                "name": "recipient",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "address",
-                "name": "token",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "debtAmount",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "principalAmount",
-                "type": "uint256"
-            }
-        ],
-        "name": "DelayedRedeemsPrincipalClaimed",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": false,
-                "internalType": "address",
-                "name": "recipient",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "principalAmount",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "delayedRedeemsCompleted",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "totalFee",
-                "type": "uint256"
-            }
-        ],
-        "name": "DelayedRedeemsPrincipalCompleted",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": false,
                 "internalType": "address[]",
                 "name": "accounts",
                 "type": "address[]"
@@ -380,25 +318,6 @@
             }
         ],
         "name": "RedeemFeeRateSet",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "previousDelay",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "newDelay",
-                "type": "uint256"
-            }
-        ],
-        "name": "RedeemPrincipalDelaySet",
         "type": "event"
     },
     {
@@ -767,30 +686,6 @@
         "type": "function"
     },
     {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "user",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "index",
-                "type": "uint256"
-            }
-        ],
-        "name": "canClaimDelayedRedeemPrincipal",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
         "inputs": [],
         "name": "cancelFeeRate",
         "outputs": [
@@ -819,26 +714,6 @@
             }
         ],
         "name": "claimDelayedRedeems",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "maxNumberOfDelayedRedeemsToClaim",
-                "type": "uint256"
-            }
-        ],
-        "name": "claimPrincipals",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "claimPrincipals",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -983,47 +858,6 @@
                     }
                 ],
                 "internalType": "struct DelayRedeemRouter.DelayedRedeem[]",
-                "name": "",
-                "type": "tuple[]"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "recipient",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "maxNumberOfDelayedRedeemsToClaim",
-                "type": "uint256"
-            }
-        ],
-        "name": "getUserPrincipal",
-        "outputs": [
-            {
-                "components": [
-                    {
-                        "internalType": "address",
-                        "name": "token",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "amount",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "fee",
-                        "type": "uint256"
-                    }
-                ],
-                "internalType": "struct DelayRedeemRouter.DebtTokenAmount[]",
                 "name": "",
                 "type": "tuple[]"
             }
@@ -1396,19 +1230,6 @@
         "type": "function"
     },
     {
-        "inputs": [],
-        "name": "redeemPrincipalDelay",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
         "inputs": [
             {
                 "internalType": "address[]",
@@ -1591,19 +1412,6 @@
             }
         ],
         "name": "setRedeemFeeRate",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "_newDelay",
-                "type": "uint256"
-            }
-        ],
-        "name": "setRedeemPrincipalDelay",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"

@@ -13,6 +13,7 @@ import (
 	"os"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/samber/lo"
 	"github.com/shopspring/decimal"
 	"github.com/spf13/cobra"
 	"github.com/zeromicro/go-zero/core/conf"
@@ -129,6 +130,12 @@ to quickly create a Cobra application.`,
 	},
 }
 
+type AirdropInfo struct {
+	Address string
+	Shares  string
+	Amount  string
+}
+
 // airdropCreateCmd represents the create command
 var airdropCreateCmd = &cobra.Command{
 	Use:   "create",
@@ -159,7 +166,7 @@ to quickly create a Cobra application.`,
 			return
 		}
 		defer fileHandle.Close()
-		leaves := make([]airdrop.TreeLeaf, 0)
+		info := make([]AirdropInfo, 0)
 		reader := csv.NewReader(fileHandle)
 		for {
 			record, err := reader.Read()
@@ -171,36 +178,50 @@ to quickly create a Cobra application.`,
 				break
 			}
 			// fmt.Println(record) // Each record is a []string
-			if len(record) < 2 {
+			if len(record) < 3 {
 				fmt.Println("Invalid record:", record)
 				return
 			}
-			if record[0] == "" || record[1] == "" {
+			if record[0] == "" || record[1] == "" || record[2] == "" {
 				fmt.Println("Empty address or amount in record:", record)
 				return
 			}
-			if amount, err := decimal.NewFromString(record[1]); err != nil || amount.IsNegative() || amount.IsZero() {
+			if shares, err := decimal.NewFromString(record[1]); err != nil || shares.IsNegative() || shares.IsZero() {
+				fmt.Println("Invalid shares in record:", record)
+				return
+			}
+			if amount, err := decimal.NewFromString(record[2]); err != nil || amount.IsNegative() || amount.IsZero() {
 				fmt.Println("Invalid amount in record:", record)
 				return
 			}
-			leaves = append(leaves, airdrop.TreeLeaf{
+			info = append(info, AirdropInfo{
 				Address: record[0],
-				Amount:  record[1],
+				Shares:  record[1],
+				Amount:  record[2],
 			})
 		}
-		if len(leaves) == 0 {
+		if len(info) == 0 {
 			fmt.Println("No valid records found in the file")
 			return
 		}
+		leaves := lo.Map(info, func(item AirdropInfo, _ int) airdrop.TreeLeaf {
+			return airdrop.TreeLeaf{
+				Address: item.Address,
+				Amount:  item.Amount,
+			}
+		})
+		shares := lo.Map(info, func(item AirdropInfo, _ int) string {
+			return item.Shares
+		})
 
 		airdropIns := airdrop.NewAirdrop(&c.AirdropConf)
-		root, err := airdropIns.CreateAirdropEpoch(chainId, contract, epoch, leaves, dryRun)
+		root, err := airdropIns.CreateAirdropEpoch(chainId, contract, epoch, leaves, shares, dryRun)
 		if err != nil {
 			slack.SendTo(c.AirdropConf.NotifySlack, fmt.Sprintf("[%s] %v", c.AirdropConf.Name, err))
 			fmt.Println(err)
 			return
 		}
-		fmt.Printf("Airdrop epoch created successfully, length of leaves: %d\n", len(leaves))
+		fmt.Printf("Airdrop epoch created successfully, length of leaves: %d\n", len(info))
 		fmt.Printf("Epoch: %d, Contract: %s, Root: %s\n", epoch, contract, hexutil.Encode(root))
 	},
 }

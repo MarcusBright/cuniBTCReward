@@ -34,6 +34,21 @@ type EvmTransaction struct {
 	LogMethod string          `gorm:"size:255"`
 	Memo      string          `gorm:"size:255"`
 }
+type DelayRedeemRecord struct {
+	gorm.Model
+	ChainId         uint            `gorm:"not null;default:0;index:t_chainid_address,unique"`
+	Address         string          `gorm:"size:255;index:t_chainid_address"`
+	Contract        string          `gorm:"size:255;index:t_chainid_address"`
+	Token           string          `gorm:"size:255"`
+	Amount          decimal.Decimal `gorm:"type:decimal(38);default:0"`
+	Fee             decimal.Decimal `gorm:"type:decimal(38);default:0"`
+	Index           uint64          `gorm:"default:0"`
+	CreateHash      string          `gorm:"size:255"`
+	CreateBlockTime time.Time       `gorm:"default:0"`
+	Claimed         bool            `gorm:"default:false"`
+	ClaimTx         string          `gorm:"size:255"`
+	ClaimAt         time.Time       `gorm:"default:0"`
+}
 
 type Strategy struct {
 	gorm.Model
@@ -53,6 +68,7 @@ type AirDropRecord struct {
 	Contract string          `gorm:"size:255;index:t_chainid_address"`
 	Epoch    uint64          `gorm:"default:0;index:t_chainid_address"`
 	Address  string          `gorm:"size:255;index:t_chainid_address"`
+	Shares   decimal.Decimal `gorm:"type:decimal(38);default:0"`
 	Amount   decimal.Decimal `gorm:"type:decimal(38);default:0"`
 	Claimed  bool            `gorm:"default:false"`
 	ClaimTx  string          `gorm:"size:255"`

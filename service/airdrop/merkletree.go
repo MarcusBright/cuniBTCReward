@@ -31,9 +31,12 @@ func GetMerkleRootAndProof(leaves []TreeLeaf) (*smt.StandardTree, error) {
 	return smt.Of(values, leafEncodings)
 }
 
-func (a *Airdrop) CreateAirdropEpoch(chainId uint, contract string, epoch uint64, leaves []TreeLeaf, dryRun bool) ([]byte, error) {
+func (a *Airdrop) CreateAirdropEpoch(chainId uint, contract string, epoch uint64, leaves []TreeLeaf, shares []string, dryRun bool) ([]byte, error) {
 	if len(leaves) == 0 {
 		return nil, fmt.Errorf("leaves is empty")
+	}
+	if len(leaves) != len(shares) {
+		return nil, fmt.Errorf("leaves length does not match shares length")
 	}
 
 	tree, err := GetMerkleRootAndProof(leaves)
@@ -48,7 +51,7 @@ func (a *Airdrop) CreateAirdropEpoch(chainId uint, contract string, epoch uint64
 		return nil, fmt.Errorf("proof length does not match leaves length")
 	}
 	// AirDropRecord
-	airdropRecords, err := lo.MapErr(proof.Proofs, func(proofData *smt.StandardMerkleLeafProofData, _ int) (*model.AirDropRecord, error) {
+	airdropRecords, err := lo.MapErr(proof.Proofs, func(proofData *smt.StandardMerkleLeafProofData, k int) (*model.AirDropRecord, error) {
 		values := proofData.Value
 		address, ok := values[0].(string)
 		if !ok {
@@ -65,6 +68,15 @@ func (a *Airdrop) CreateAirdropEpoch(chainId uint, contract string, epoch uint64
 		if decimalAmount.IsNegative() {
 			return nil, fmt.Errorf("amount is negative for address[%s]", common.HexToAddress(address).String())
 		}
+
+		decimalShares, err := decimal.NewFromString(shares[k])
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert shares string to decimal: %v", err)
+		}
+		if decimalShares.IsNegative() {
+			return nil, fmt.Errorf("shares is negative for address[%s]", common.HexToAddress(address).String())
+		}
+
 		proofString, err := json.Marshal(proofData.Proof)
 		if err != nil {
 			return nil, fmt.Errorf("failed to marshal proof: %v", err)
@@ -76,6 +88,7 @@ func (a *Airdrop) CreateAirdropEpoch(chainId uint, contract string, epoch uint64
 			Epoch:    epoch,
 			Address:  common.HexToAddress(address).String(),
 			Amount:   decimalAmount,
+			Shares:   decimalShares,
 			Claimed:  false,
 			ClaimTx:  "",
 			ClaimAt:  time.Unix(0, 0),
