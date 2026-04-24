@@ -430,18 +430,19 @@ func (s *Scanner) processDelayRedeemRouterLog(log types.Log, chainInfo config.Ch
 			return err
 		}
 		if err := tx.Create(&model.DelayRedeemRecord{
-			ChainId:         chainInfo.Client.ChainId,
-			Address:         redeemCreatedEvent.Recipient.String(),
-			Contract:        log.Address.String(),
-			Token:           redeemCreatedEvent.Token.String(),
-			Amount:          decimal.NewFromBigInt(redeemCreatedEvent.Amount, 0),
-			Fee:             decimal.NewFromBigInt(redeemCreatedEvent.RedeemFee, 0),
-			CreateHash:      log.TxHash.String(),
-			CreateBlockTime: time.Unix(int64(log.BlockTimestamp), 0),
-			Claimed:         false,
-			ClaimTx:         "",
-			ClaimAt:         time.Unix(0, 0),
-			Index:           redeemCreatedEvent.Index.Uint64(),
+			ChainId:           chainInfo.Client.ChainId,
+			Address:           redeemCreatedEvent.Recipient.String(),
+			Contract:          log.Address.String(),
+			Token:             redeemCreatedEvent.Token.String(),
+			Amount:            decimal.NewFromBigInt(redeemCreatedEvent.Amount, 0),
+			Fee:               decimal.NewFromBigInt(redeemCreatedEvent.RedeemFee, 0),
+			CreateHash:        log.TxHash.String(),
+			CreateBlockTime:   time.Unix(int64(log.BlockTimestamp), 0),
+			CreateBlockNumber: log.BlockNumber,
+			Claimed:           false,
+			ClaimTx:           "",
+			ClaimAt:           time.Unix(0, 0),
+			Index:             redeemCreatedEvent.Index.Uint64(),
 		}).Error; err != nil {
 			return err
 		}
