@@ -1,11 +1,13 @@
 package config
 
+import "github.com/zeromicro/go-zero/core/service"
+
 type Config struct {
 	AirdropConf
 }
 
 type AirdropConf struct {
-	Name        string `json:",optional,inherit"`
+	service.ServiceConf
 	DataSource  string `json:",inherit"`
 	SqlLog      bool   `json:",optional,default=false,inherit"`
 	ChainInfo   []ChainInfo

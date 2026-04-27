@@ -29,7 +29,7 @@ to quickly create a Cobra application.`,
 		fmt.Println("evmscan called")
 		var c ServiceConfig
 		conf.MustLoad(cfgFile, &c)
-		c.MustSetUp()
+		c.EvmScanConf.MustSetUp()
 		// fmt.Printf("evmscanconfi:%v", c.EvmScanConf)
 
 		//log

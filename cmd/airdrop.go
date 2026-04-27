@@ -89,7 +89,7 @@ to quickly create a Cobra application.`,
 		fmt.Println("airdrop shares called")
 		var c ServiceConfig
 		conf.MustLoad(cfgFile, &c)
-		c.MustSetUp()
+		c.AirdropConf.MustSetUp()
 		// fmt.Printf("evmscanconfi:%v", c.EvmScanConf)
 
 		//log
@@ -150,7 +150,7 @@ to quickly create a Cobra application.`,
 		fmt.Println("airdrop create called")
 		var c ServiceConfig
 		conf.MustLoad(cfgFile, &c)
-		c.MustSetUp()
+		c.AirdropConf.MustSetUp()
 		// fmt.Printf("evmscanconfi:%v", c.EvmScanConf)
 
 		//log

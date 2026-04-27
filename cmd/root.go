@@ -4,12 +4,12 @@ Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	apiconfig "cuniBTCReward/api/setup/config"
 	airdropconfig "cuniBTCReward/service/airdrop/config"
 	evmscanconfig "cuniBTCReward/service/evmscan/config"
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/zeromicro/go-zero/core/service"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -51,11 +51,11 @@ func init() {
 }
 
 type ServiceConfig struct {
-	service.ServiceConf
 	DataSource  string `json:",inherit"`
 	SqlLog      bool   `json:",optional,default=false,inherit"`
 	NotifySlack string `json:",optional,inherit"`
 	LogSlack    string `json:",optional,inherit"`
 	EvmScanConf evmscanconfig.EvmScanConf
 	AirdropConf airdropconfig.AirdropConf
+	ApiConf     apiconfig.Config
 }
