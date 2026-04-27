@@ -4,8 +4,8 @@ Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"cuniBTCReward/api/setup"
-	setupconfig "cuniBTCReward/api/setup/config"
+	export "cuniBTCReward/api/export"
+	exportconfig "cuniBTCReward/api/export/config"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -31,10 +31,10 @@ to quickly create a Cobra application.`,
 		server := rest.MustNewServer(c.ApiConf.RestConf)
 		defer server.Stop()
 
-		setupConfig := setupconfig.Config{
+		setupConfig := exportconfig.Config{
 			Config: c.ApiConf.Config,
 		}
-		setup.Setup(server, setupConfig)
+		export.Setup(server, setupConfig)
 
 		fmt.Printf("Starting server at %s:%d...\n", c.ApiConf.Host, c.ApiConf.Port)
 		server.Start()

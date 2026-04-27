@@ -1,10 +1,10 @@
 package setup
 
 import (
+	setupconfig "cuniBTCReward/api/export/config"
 	"cuniBTCReward/api/internal/config"
 	"cuniBTCReward/api/internal/handler"
 	"cuniBTCReward/api/internal/svc"
-	setupconfig "cuniBTCReward/api/setup/config"
 	"unsafe"
 
 	"github.com/zeromicro/go-zero/rest"

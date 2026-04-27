@@ -4,7 +4,7 @@ Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	apiconfig "cuniBTCReward/api/setup/config"
+	apiconfig "cuniBTCReward/api/export/config"
 	airdropconfig "cuniBTCReward/service/airdrop/config"
 	evmscanconfig "cuniBTCReward/service/evmscan/config"
 	"os"
