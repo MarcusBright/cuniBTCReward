@@ -454,7 +454,7 @@ func (s *Scanner) processDelayRedeemRouterLog(log types.Log, chainInfo config.Ch
 		}
 		return tx.Model(&model.DelayRedeemRecord{}).Where("chain_id = ? AND contract = ? AND address = ? AND `index` < ?",
 			chainInfo.Client.ChainId, log.Address.String(), redeemCompleteEvent.Recipient.String(),
-			redeemCompleteEvent.DelayedRedeemsCompleted.Uint64()).
+			redeemCompleteEvent.DelayedRedeemsCompleted.Uint64()).Where("claimed = ?", false).
 			Updates(map[string]interface{}{
 				"claimed":  true,
 				"claim_tx": log.TxHash.String(),

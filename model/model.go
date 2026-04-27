@@ -21,11 +21,12 @@ type Cursor struct {
 type EvmTransaction struct {
 	gorm.Model
 	// effect address, such as from or to
-	Address string `gorm:"size:255;index:t_address_chainid_hash,unique"`
-	ChainId uint   `gorm:"not null;default:0;index:t_address_chainid_hash"`
-	Hash    string `gorm:"size:255;index:t_address_chainid_hash"`
+	Address     string `gorm:"size:128;index:t_address_chainid_hash,unique"`
+	ChainId     uint   `gorm:"not null;default:0;index:t_address_chainid_hash"`
+	Hash        string `gorm:"size:128;index:t_address_chainid_hash"`
+	IndexInHash uint   `gorm:"default:0;index:t_address_chainid_hash"`
 	// Contract is the contract address of this transaction, such as cuniBTC or redeemRouter, each stategy.
-	Contract       string `gorm:"size:255;index:t_address_chainid_hash"`
+	Contract       string `gorm:"size:128;index:t_address_chainid_hash"`
 	Token          string `gorm:"size:255"`
 	BlockNumber    uint64 `gorm:"default:0;index:t_blocknumber"`
 	BlockTimestamp uint64 `gorm:"default:0;index:t_blocktimestamp"`
@@ -37,13 +38,14 @@ type EvmTransaction struct {
 type DelayRedeemRecord struct {
 	gorm.Model
 	ChainId           uint            `gorm:"not null;default:0;index:t_chainid_address,unique"`
-	Address           string          `gorm:"size:255;index:t_chainid_address"`
-	Contract          string          `gorm:"size:255;index:t_chainid_address"`
+	Address           string          `gorm:"size:128;index:t_chainid_address"`
+	Contract          string          `gorm:"size:128;index:t_chainid_address"`
+	CreateHash        string          `gorm:"size:128;index:t_chainid_address"`
+	IndexInHash       uint            `gorm:"default:0;index:t_chainid_address"`
 	Token             string          `gorm:"size:255"`
 	Amount            decimal.Decimal `gorm:"type:decimal(38);default:0"`
 	Fee               decimal.Decimal `gorm:"type:decimal(38);default:0"`
 	Index             uint64          `gorm:"default:0"`
-	CreateHash        string          `gorm:"size:255"`
 	CreateBlockNumber uint64          `gorm:"default:0;index:t_blocknumber"`
 	CreateBlockTime   time.Time       `gorm:"default:0"`
 	Claimed           bool            `gorm:"default:false"`
