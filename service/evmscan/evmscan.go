@@ -380,6 +380,7 @@ func (s *Scanner) processCuniBTCVaultLog(log types.Log, chainInfo config.ChainIn
 			Address:        mintedEvent.Sender.String(),
 			ChainId:        chainInfo.Client.ChainId,
 			Hash:           log.TxHash.String(),
+			IndexInHash:    log.Index,
 			Contract:       log.Address.String(),
 			Token:          mintedEvent.Token.String(),
 			BlockNumber:    log.BlockNumber,
@@ -418,6 +419,7 @@ func (s *Scanner) processDelayRedeemRouterLog(log types.Log, chainInfo config.Ch
 			Address:        redeemCreatedEvent.Recipient.String(),
 			ChainId:        chainInfo.Client.ChainId,
 			Hash:           log.TxHash.String(),
+			IndexInHash:    log.Index,
 			Contract:       log.Address.String(),
 			Token:          redeemCreatedEvent.Token.String(),
 			BlockNumber:    log.BlockNumber,
@@ -432,6 +434,7 @@ func (s *Scanner) processDelayRedeemRouterLog(log types.Log, chainInfo config.Ch
 		if err := tx.Create(&model.DelayRedeemRecord{
 			ChainId:           chainInfo.Client.ChainId,
 			Address:           redeemCreatedEvent.Recipient.String(),
+			IndexInHash:       log.Index,
 			Contract:          log.Address.String(),
 			Token:             redeemCreatedEvent.Token.String(),
 			Amount:            decimal.NewFromBigInt(redeemCreatedEvent.Amount, 0),
