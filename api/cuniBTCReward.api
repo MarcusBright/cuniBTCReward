@@ -1,0 +1,18 @@
+syntax = "v1"
+
+info (
+	wrapCodeMsg:    true
+	title:          "cuniBTCReward API"
+	schemes:        "https,http"
+	useDefinitions: true
+)
+
+type resp {
+	msg string `json:"msg"`
+}
+
+service cuniBTCReward {
+	@handler ping
+	get /ping returns (resp)
+}
+
