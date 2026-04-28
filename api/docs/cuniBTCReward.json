@@ -265,6 +265,41 @@
         }
       }
     },
+    "/api/v1/uniBTCPrice": {
+      "post": {
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "summary": "UniBTCPrice",
+        "operationId": "uniBTCPrice",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "description": "business code",
+                  "type": "integer",
+                  "example": 0
+                },
+                "data": {
+                  "type": "integer"
+                },
+                "msg": {
+                  "description": "business message",
+                  "type": "string",
+                  "example": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/ping": {
       "get": {
         "produces": [
@@ -487,7 +522,7 @@
       }
     }
   },
-  "x-date": "2026-04-28 17:21:13",
+  "x-date": "2026-04-28 21:59:08",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",

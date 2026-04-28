@@ -10,4 +10,6 @@ type Config struct {
 	DataSource     string `json:",inherit"`
 	SqlLog         bool   `json:",optional,default=false,inherit"`
 	DefaultChainId int64  `json:""`
+	PriceCronSpec  string `json:",default=@every 30m"`
+	CoinGecoKey    string `json:""`
 }

@@ -5,7 +5,9 @@ package svc
 
 import (
 	"cuniBTCReward/api/internal/config"
+	unibtcprice "cuniBTCReward/api/internal/crontab"
 	"cuniBTCReward/pkg/gormz"
+	"cuniBTCReward/service/crons"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"gorm.io/driver/mysql"
@@ -13,8 +15,10 @@ import (
 )
 
 type ServiceContext struct {
-	Config   config.Config
-	Database *gorm.DB
+	Config          config.Config
+	Database        *gorm.DB
+	Cron            *crons.ScanCron
+	UniBtcPriceCron *unibtcprice.CoinGeckoUniBTC
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -25,8 +29,17 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	db, err := gorm.Open(mysql.Open(c.DataSource), gormConfig)
 	logx.Must(err)
 
+	uniBtcPriceCron := unibtcprice.NewCoinGeckoUniBTC(c)
+	crontab := crons.New()
+	_, err = crontab.AddFunc(c.PriceCronSpec, uniBtcPriceCron.CoinGeckoUniBTCCron)
+	logx.Must(err)
+	uniBtcPriceCron.CoinGeckoUniBTCCron()
+	logx.Infof("add cron priceCron scan spec: %v", c.PriceCronSpec)
+
 	return &ServiceContext{
-		Config:   c,
-		Database: db,
+		Config:          c,
+		Database:        db,
+		Cron:            crontab,
+		UniBtcPriceCron: uniBtcPriceCron,
 	}
 }

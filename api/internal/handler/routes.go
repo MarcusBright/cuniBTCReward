@@ -29,6 +29,11 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Path:    "/totalEarned",
 				Handler: TotalEarnedHandler(serverCtx),
 			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/uniBTCPrice",
+				Handler: UniBTCPriceHandler(serverCtx),
+			},
 		},
 		rest.WithPrefix("/api/v1"),
 	)

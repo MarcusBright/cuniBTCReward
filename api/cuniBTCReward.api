@@ -71,6 +71,9 @@ service cuniBTCReward {
 
 	@handler PositionOverview
 	post /positionOverview (PositionOverviewReq) returns ([]PositionOverviewResp)
+
+	@handler UniBTCPrice
+	post /uniBTCPrice returns (uint64)
 }
 
 @server (

@@ -46,13 +46,13 @@ func (l *PositionOverviewLogic) PositionOverview(req *types.PositionOverviewReq)
 		}
 		stratedy = []model.Strategy{*s}
 	}
-	for range stratedy {
-		userStatus, err := l.strategyPosition(req.Symbol, req.Address, stratedy)
+	for _, v := range stratedy {
+		userStatus, err := l.strategyPosition(v.Symbol, req.Address, stratedy)
 		if err != nil {
 			return resp, err
 		}
 		resp = append(resp, types.PositionOverviewResp{
-			Symbol:      req.Symbol,
+			Symbol:      v.Symbol,
 			Amount:      userStatus.Amount.Mul(decimal.New(1, -8)).String(),
 			Earning:     userStatus.Earning.Mul(decimal.New(1, -8)).String(),
 			Queued:      userStatus.Queued.Mul(decimal.New(1, -8)).String(),
@@ -88,6 +88,9 @@ func (l *PositionOverviewLogic) strategyPosition(symbol string, address string, 
 	if err != nil {
 		return
 	}
+	if len(epoch) == 0 {
+		return userStatus, errors.New("no epoch")
+	}
 	var stats UserStrategyStats
 	stats.Symbol = symbol
 	//reward
@@ -113,11 +116,10 @@ func (l *PositionOverviewLogic) strategyPosition(symbol string, address string, 
 		Select(`
         SUM(CASE WHEN block_number > ? THEN amount ELSE 0 END) as queued,
         SUM(CASE WHEN block_number <= ? THEN amount ELSE 0 END) as earning,
-        COALESCE(SUM(amount), 0) as amount,
+        COALESCE(SUM(amount), 0) as amount
     `, epoch[0].LockupStart, epoch[0].LockupStart).
-		Where("address = ? AND contract in (?)", address,
+		Where("address = ? AND contract in ?", address,
 			[]string{getVaultContract(symbol, stratedy), getDelayRedeemContract(symbol, stratedy)}).Scan(&txAgg)
-
 	stats.Queued = txAgg.Queued
 	stats.Earning = txAgg.Earning
 	stats.Amount = txAgg.Amount.Add(stats.Withdrawing)
