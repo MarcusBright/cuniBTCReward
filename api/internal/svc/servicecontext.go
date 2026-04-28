@@ -35,6 +35,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	logx.Must(err)
 	uniBtcPriceCron.CoinGeckoUniBTCCron()
 	logx.Infof("add cron priceCron scan spec: %v", c.PriceCronSpec)
+	crontab.Run()
 
 	return &ServiceContext{
 		Config:          c,

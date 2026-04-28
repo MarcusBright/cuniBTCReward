@@ -26,6 +26,10 @@ func (sc *ScanCron) Start() {
 	sc.Cron.Run()
 }
 
+func (sc *ScanCron) Run() {
+	sc.Cron.Start()
+}
+
 func (sc *ScanCron) StopContext() context.Context {
 	return sc.Cron.Stop()
 }

@@ -6,11 +6,13 @@ package cmd
 import (
 	export "cuniBTCReward/api/export"
 	exportconfig "cuniBTCReward/api/export/config"
+	"cuniBTCReward/pkg/slack"
 	"fmt"
 	"net/http"
 
 	"github.com/spf13/cobra"
 	"github.com/zeromicro/go-zero/core/conf"
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest"
 )
 
@@ -28,6 +30,13 @@ to quickly create a Cobra application.`,
 		fmt.Println("api called")
 		var c ServiceConfig
 		conf.MustLoad(cfgFile, &c)
+
+		//log
+		if c.LogSlack != "" {
+			logx.AddWriter(logx.NewWriter(slack.NewSlackWriter(c.LogSlack)))
+			logx.AddGlobalFields(logx.Field("server", c.EvmScanConf.Name))
+			defer logx.Close()
+		}
 
 		server := rest.MustNewServer(c.ApiConf.RestConf,
 			rest.WithFileServer("/docs", http.Dir("./api/docs")),

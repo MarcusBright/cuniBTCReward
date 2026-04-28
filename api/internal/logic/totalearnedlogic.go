@@ -58,11 +58,13 @@ func (l *TotalEarnedLogic) TotalEarned(req *types.TotalEarnedReq) (resp []types.
 	if len(stratedy) == 0 {
 		return resp, errors.New("no stratedy")
 	}
-	_, err = getStratedy(req.Symbol, stratedy)
-	if err != nil {
-		return resp, errors.New("no stratedy")
+	if req.Symbol != "" {
+		s, err := getStratedy(req.Symbol, stratedy)
+		if err != nil {
+			return resp, errors.New("no stratedy")
+		}
+		stratedy = []model.Strategy{*s}
 	}
-
 	type ContractSummary struct {
 		Contract    string
 		TotalAmount decimal.Decimal
