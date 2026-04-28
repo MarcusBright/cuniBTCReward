@@ -26,3 +26,27 @@ type PageData struct {
 	Limit  int   `json:"limit,example=10"`           //Number of items per page, consistent with the request
 	Offset int   `json:"offset,example=0,default=0"` //Data offset, consistent with the request
 }
+
+type PositionOverviewReq struct {
+	Symbol  string `json:"symbol,optional,example=cuniBTC"` //symbol of the strategy, empty indicate all
+	Address string `json:"address,example=0x8cb37518330014E027396E3ED59A231FBe3B011A"`
+}
+
+type PositionOverviewResp struct {
+	Symbol      string `json:"symbol,example=cuniBTC"`       //symbol of the stratedy
+	Amount      string `json:"amount,example=0.023"`         //amount of this symbol
+	Earning     string `json:"earning,example=0.023243"`     //amount earning human readable
+	Queued      string `json:"queued,example=0.023243"`      //amount queued human readable
+	Withdrawing string `json:"withdrawing,example=0.023243"` //amount withdrawing human readable
+	Rewards     string `json:"rewards,example=0.023243"`     //amount withdrawing human readable
+}
+
+type TotalEarnedReq struct {
+	Symbol  string `json:"symbol,optional,example=cuniBTC"` //symbol of the strategy, empty indicate all
+	Address string `json:"address,example=0x8cb37518330014E027396E3ED59A231FBe3B011A"`
+}
+
+type TotalEarnedResp struct {
+	Symbol      string `json:"symbol,example=cuniBTC"`       //symbol of the stratedy
+	TotalEarned string `json:"totalEarned,example=0.023243"` //amount earned human readable
+}

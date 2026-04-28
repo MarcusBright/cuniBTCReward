@@ -19,6 +19,16 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Path:    "/currentEpoch",
 				Handler: CurrentEpochHandler(serverCtx),
 			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/positionOverview",
+				Handler: PositionOverviewHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/totalEarned",
+				Handler: TotalEarnedHandler(serverCtx),
+			},
 		},
 		rest.WithPrefix("/api/v1"),
 	)
