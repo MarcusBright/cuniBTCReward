@@ -14,4 +14,6 @@ func Setup(server *rest.Server, c exportconfig.Config) {
 	config := (*config.Config)(unsafe.Pointer(&c))
 	ctx := svc.NewServiceContext(*config)
 	handler.RegisterHandlers(server, ctx)
+	handler.RegisterSwaggerHandlers(server)
+	server.PrintRoutes()
 }

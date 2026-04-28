@@ -7,6 +7,7 @@ import (
 	export "cuniBTCReward/api/export"
 	exportconfig "cuniBTCReward/api/export/config"
 	"fmt"
+	"net/http"
 
 	"github.com/spf13/cobra"
 	"github.com/zeromicro/go-zero/core/conf"
@@ -28,7 +29,10 @@ to quickly create a Cobra application.`,
 		var c ServiceConfig
 		conf.MustLoad(cfgFile, &c)
 
-		server := rest.MustNewServer(c.ApiConf.RestConf)
+		server := rest.MustNewServer(c.ApiConf.RestConf,
+			rest.WithFileServer("/docs", http.Dir("./api/docs")),
+			rest.WithCors("*"))
+
 		defer server.Stop()
 
 		setupConfig := exportconfig.Config{

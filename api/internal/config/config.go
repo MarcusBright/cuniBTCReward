@@ -7,6 +7,7 @@ import "github.com/zeromicro/go-zero/rest"
 
 type Config struct {
 	rest.RestConf
-	DataSource string `json:",inherit"`
-	SqlLog     bool   `json:",optional,default=false,inherit"`
+	DataSource     string `json:",inherit"`
+	SqlLog         bool   `json:",optional,default=false,inherit"`
+	DefaultChainId int64  `json:""`
 }

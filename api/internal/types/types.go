@@ -3,6 +3,26 @@
 
 package types
 
-type Resp struct {
-	Msg string `json:"msg"`
+type CurrentEpochReq struct {
+	Symbol string `json:"symbol,optional,example=cuniBTC"` //symbol of the strategy, empty indicate all
+}
+
+type CurrentEpochResp struct {
+	Epoch                 uint64 `json:"epoch,example=10"`                         //epoch number
+	OperateStartTimestamp uint64 `json:"operateStartTimestamp,example=1777349793"` // operate startTime
+	OperatePeriod         uint64 `json:"operatePeriod,example=86400"`              // operate period in second
+	LockupStartTimestamp  uint64 `json:"lockupStartTimestamp,example=1777649793"`  //lockup startTime
+	LockupPeriod          uint64 `json:"lockupPeriod,example=86400"`               //lockup period in second
+	Symbol                string `json:"symbol,example=cuniBTC"`                   //symbol of the stratedy
+}
+
+type ListReq struct {
+	Limit  int `json:"limit,example=10,default=10,range=[1:50]"` //Number of items per page
+	Offset int `json:"offset,example=0,default=0"`               //Data offset
+}
+
+type PageData struct {
+	Total  int64 `json:"total,example=1234"`         //Total data count
+	Limit  int   `json:"limit,example=10"`           //Number of items per page, consistent with the request
+	Offset int   `json:"offset,example=0,default=0"` //Data offset, consistent with the request
 }
