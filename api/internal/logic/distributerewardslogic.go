@@ -217,6 +217,9 @@ func (l *DistributeRewardsLogic) DistributeRewardsNoLock(req *types.DistributeRe
 	if !ok {
 		return nil, fmt.Errorf("not found step")
 	}
+	if symbolStep.BaseProfitStep <= 0 {
+		return nil, fmt.Errorf("invalid base profit step for symbol: %s", req.Symbol)
+	}
 	//check range
 	totalRewards, err := decimal.NewFromString(req.TotalRewards)
 	if err != nil {
@@ -262,7 +265,7 @@ func (l *DistributeRewardsLogic) DistributeRewardsNoLock(req *types.DistributeRe
 			req.Epoch, epochEndTime, time.Now().Unix())
 	}
 
-	l.Infof("Processing distribution for symbol: %s, epoch: %d, vault: %s, airdrop: %s",
+	l.Infof("Processing distribution no lock for symbol: %s, epoch: %d, vault: %s, airdrop: %s",
 		req.Symbol, req.Epoch, strategy.Vault, strategy.Airdrop)
 	var records []EpochRecordExtra
 	sql := `WITH user_running_balance AS (
@@ -357,23 +360,23 @@ WHERE e.address NOT IN (SELECT address FROM user_base_final)
 ORDER BY last_deposit_time DESC`
 	args := []interface{}{
 		epoch.LockupStart + epoch.LockupPeriod, []string{strategy.Vault, strategy.DelayRedeemRouter}, chainID,
-		epoch.OperatePeriod, epoch.LockupStart + epoch.LockupPeriod, epoch.LockupStart + epoch.LockupPeriod,
-		symbolStep,
+		epoch.OperateStart, epoch.LockupStart + epoch.LockupPeriod, epoch.LockupStart + epoch.LockupPeriod,
+		symbolStep.BaseProfitStep,
 		strategy.Vault,
 		totalRewards,
-		epoch.OperatePeriod, epoch.LockupStart + epoch.LockupPeriod,
+		epoch.OperateStart, epoch.LockupStart + epoch.LockupPeriod,
 		req.Symbol,
 	}
 	err = l.svcCtx.Database.WithContext(l.ctx).Raw(sql, args...).Scan(&records).Error
 	if err != nil {
 		return nil, fmt.Errorf("query evm_transactions failed: %w", err)
 	}
-	totalShare := decimal.Zero
+	rewardsPaid := decimal.Zero
 	for _, r := range records {
-		totalShare = totalShare.Add(r.AmountTotal)
+		rewardsPaid = rewardsPaid.Add(r.AmountTotal)
 	}
-	if totalShare.IsZero() {
-		return nil, fmt.Errorf("total share is zero for epoch %d, symbol: %s", req.Epoch, req.Symbol)
+	if rewardsPaid.IsZero() {
+		return nil, fmt.Errorf("total rewards paid is zero for epoch %d, symbol: %s", req.Epoch, req.Symbol)
 	}
 
 	// Get Proof
@@ -388,12 +391,17 @@ ORDER BY last_deposit_time DESC`
 		return nil, fmt.Errorf("generate airdrop proof error: %v", err)
 	}
 
-	totalUserAverage := decimal.Zero
+	weightedShare := decimal.Zero
 	for _, r := range records {
-		totalUserAverage = totalUserAverage.Add(r.BaseShare)
+		weightedShare = weightedShare.Add(r.BaseShare)
 	}
-	shareInsec:=totalUserAverage.Div(decimal.NewFromUint64(epoch.OperatePeriod))
-	apr:=
+	if weightedShare.Cmp(decimal.Zero) <= 0 {
+		return nil, fmt.Errorf("weighted share is zero for epoch %d, symbol: %s", req.Epoch, req.Symbol)
+	}
+	// BaseShare is balance multiplied by the number of BaseProfitStep intervals.
+	// Convert it to balance-seconds before annualizing the rewards actually paid.
+	apr := rewardsPaid.Mul(decimal.NewFromInt(31536000)).
+		Div(weightedShare.Mul(decimal.NewFromInt(symbolStep.BaseProfitStep)))
 	// Step 5: upsert into air_drop_records
 	for i, r := range records {
 		(*airDropRecord)[i].LastDepositTime = r.LastDepositTime
@@ -432,8 +440,8 @@ ORDER BY last_deposit_time DESC`
 		return nil, fmt.Errorf("create error: %v", err)
 	}
 
-	l.Infof("Distribution complete for symbol: %s, epoch: %d, total addresses: %d, total share: %s, total rewards: %s",
-		req.Symbol, req.Epoch, len(records), totalShare.String(), totalRewards.String())
+	l.Infof("Distribution complete for symbol: %s, epoch: %d, total addresses: %d, rewards paid: %s, total rewards: %s",
+		req.Symbol, req.Epoch, len(records), rewardsPaid.String(), totalRewards.String())
 
 	resp = &types.DistributeRewardsResp{
 		DistributeRewardsReq: *req,
