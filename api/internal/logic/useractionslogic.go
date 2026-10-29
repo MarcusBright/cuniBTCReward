@@ -123,43 +123,15 @@ LIMIT ? OFFSET ?`
 		}
 	} else { //not airdrop
 		var total int64
-		Countsql := `
-With action AS (SELECT t.address,
-         COALESCE(SUM(CASE WHEN t.block_timestamp < e.lockup_start THEN t.amount ELSE 0 END), 0) AS deposited,
-         COALESCE(SUM(CASE WHEN t.block_timestamp >= e.lockup_start AND t.block_timestamp < e.lockup_start + e.lockup_period THEN t.amount ELSE 0 END), 0) AS queued
-FROM evm_transactions t
-LEFT JOIN strategies s ON t.contract = s.vault AND s.chain_id = ? AND s.deleted_at IS NULL AND s.symbol = ?
-LEFT JOIN epoches e ON e.contract = s.vault AND e.chain_id = ? AND e.deleted_at IS NULL AND epoch = ?
-WHERE t.deleted_at IS NULL AND t.amount > 0
-GROUP BY t.address
-HAVING deposited > 0 OR queued > 0
-)
-SELECT COUNT(*) from action
-`
-		args := []interface{}{
-			chainID, req.Symbol, chainID, req.Epoch,
-		}
-		if err = l.svcCtx.Database.WithContext(l.ctx).Raw(Countsql, args...).Scan(&total).Error; err != nil {
+		countSQL := pendingUserActionsCTE + " SELECT COUNT(*) FROM action"
+		args := []any{chainID, req.Symbol, req.Epoch}
+		if err = l.svcCtx.Database.WithContext(l.ctx).Raw(countSQL, args...).Scan(&total).Error; err != nil {
 			return
 		}
 		var rows []userActionRow
-		sql := `
-	   SELECT t.address,
-	   e.operate_start, e.operate_period,
-       e.lockup_start, e.lockup_period,
-	   s.symbol,
-       COALESCE(SUM(CASE WHEN t.block_timestamp < e.lockup_start THEN t.amount ELSE 0 END), 0) AS deposited,
-       COALESCE(SUM(CASE WHEN t.block_timestamp >= e.lockup_start AND t.block_timestamp < e.lockup_start + e.lockup_period THEN t.amount ELSE 0 END), 0) AS queued,
-	   MAX(CASE WHEN t.contract = s.vault THEN t.block_timestamp END) AS last_deposit_time
-FROM evm_transactions t
-LEFT JOIN strategies s ON t.contract = s.vault AND s.chain_id = ? AND s.deleted_at IS NULL AND s.symbol = ?
-LEFT JOIN epoches e ON e.contract = s.vault AND e.chain_id = ? AND e.deleted_at IS NULL AND epoch = ?
-WHERE t.deleted_at IS NULL AND t.amount > 0
-GROUP BY t.address
-HAVING deposited > 0 OR queued > 0
-ORDER BY last_deposit_time DESC
-LIMIT ? OFFSET ?
-`
+		sql := pendingUserActionsCTE + ` SELECT * FROM action
+ORDER BY last_deposit_time DESC, address ASC
+LIMIT ? OFFSET ?`
 		args = append(args, req.Limit, req.Offset)
 		err = l.svcCtx.Database.WithContext(l.ctx).Raw(sql, args...).Scan(&rows).Error
 		if err != nil {

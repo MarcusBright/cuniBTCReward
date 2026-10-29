@@ -132,6 +132,12 @@ epoch_unclaimed AS (
 		  )
     GROUP BY te.contract, te.epoch
 ),
+` + pendingExtraRewardsCTE + `,
+extra_reward_agg AS (
+    SELECT contract, epoch, SUM(amount_extra) AS amount_extra
+    FROM pending_extra_rewards
+    GROUP BY contract, epoch
+),
 airdrop_agg AS (
     SELECT s.vault,
            a.epoch,
@@ -149,9 +155,9 @@ SELECT e.epoch, e.operate_start, e.operate_period,
        e.lockup_start, e.lockup_period, s.symbol,
        COALESCE(eta.participants, 0) AS participants,
        COALESCE(eta.tvl_trans, 0) + COALESCE(u.unclaimed_redeem, 0) AS tvl,
-       COALESCE(aa.rewards, 0) AS rewards,
+       COALESCE(aa.rewards, 0) + COALESCE(er.amount_extra, 0) AS rewards,
        COALESCE(aa.amount_base, 0) AS amount_base,
-       COALESCE(aa.amount_extra, 0) AS amount_extra,
+       COALESCE(aa.amount_extra, 0) + COALESCE(er.amount_extra, 0) AS amount_extra,
        COALESCE(aa.claimed, 0) AS claimed,
        COALESCE(ae.apy, 0) AS apy,
 	   COALESCE(eq.queued, 0) AS queued,
@@ -167,6 +173,7 @@ JOIN strat s ON s.vault = e.contract
 LEFT JOIN epoch_tx_agg eta ON eta.contract = e.contract AND eta.epoch = e.epoch
 LEFT JOIN epoch_unclaimed u ON u.contract = e.contract AND u.epoch = e.epoch
 LEFT JOIN airdrop_agg aa ON aa.vault = e.contract AND aa.epoch = e.epoch
+LEFT JOIN extra_reward_agg er ON er.contract = e.contract AND er.epoch = e.epoch
 LEFT JOIN epoch_queued eq ON eq.contract = e.contract AND eq.epoch = e.epoch
 LEFT JOIN air_drop_epoches ae ON ae.contract = s.airdrop AND ae.epoch = e.epoch AND ae.chain_id = e.chain_id AND ae.deleted_at IS NULL
 WHERE e.chain_id = ? AND e.deleted_at IS NULL

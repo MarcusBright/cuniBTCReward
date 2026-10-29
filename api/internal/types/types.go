@@ -62,7 +62,7 @@ type EpochInfo struct {
 	Creator      string  `json:"creator,example=0xbf63Fba8137ce3043289f1BDbdC1700f65ee1aAD"`
 	CreatorAt    int64   `json:"creatorAt,example=3234535"`
 	AmountBase   string  `json:"amountBase,example=0.23"`  //base rewards, human readable
-	AmountExtra  string  `json:"amountExtra,example=0.11"` //extra rewards, human readable
+	AmountExtra  string  `json:"amountExtra,example=0.11"` //extra rewards accrued before distribution or persisted after distribution, human readable
 }
 
 type EpochInfoReq struct {
@@ -168,7 +168,7 @@ type RewardSummaryResp struct {
 	Claimed     string `json:"claimed,example=23.8"`
 	UnClaimed   string `json:"unClaimed,example=23.8"`
 	AmountBase  string `json:"amountBase,example=0.23"`  //base rewards, human readable
-	AmountExtra string `json:"amountExtra,example=0.11"` //extra rewards, human readable
+	AmountExtra string `json:"amountExtra,example=0.11"` //accrued and distributed extra rewards, independent of root confirmation, human readable
 }
 
 type SignTermsReq struct {
@@ -215,7 +215,7 @@ type UserAction struct {
 	ClaimAt     uint64 `json:"claimAt,example=1777349793"`
 	Claimed     bool   `json:"claimed,example=true|false"`
 	AmountBase  string `json:"amountBase,example=0.23"`  //base rewards, human readable
-	AmountExtra string `json:"amountExtra,example=0.11"` //extra rewards, human readable
+	AmountExtra string `json:"amountExtra,example=0.11"` //extra rewards accrued before distribution or persisted after distribution, human readable
 }
 
 type UserActionListResp struct {

@@ -1382,7 +1382,7 @@
           "example": "0.23"
         },
         "amountExtra": {
-          "description": "extra rewards, human readable",
+          "description": "extra rewards accrued before distribution or persisted after distribution, human readable",
           "type": "string",
           "example": "0.11"
         },
@@ -1916,7 +1916,7 @@
           "example": "0.23"
         },
         "amountExtra": {
-          "description": "extra rewards, human readable",
+          "description": "accrued and distributed extra rewards, independent of root confirmation, human readable",
           "type": "string",
           "example": "0.11"
         },
@@ -2091,7 +2091,7 @@
           "example": "0.23"
         },
         "amountExtra": {
-          "description": "extra rewards, human readable",
+          "description": "extra rewards accrued before distribution or persisted after distribution, human readable",
           "type": "string",
           "example": "0.11"
         },
@@ -2470,7 +2470,7 @@
       "in": "header"
     }
   },
-  "x-date": "2026-10-29 14:36:30",
+  "x-date": "2026-10-29 15:12:11",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",
