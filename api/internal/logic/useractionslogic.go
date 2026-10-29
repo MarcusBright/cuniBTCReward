@@ -40,6 +40,8 @@ type userActionRow struct {
 	Queued        decimal.Decimal `gorm:"column:queued"`
 	ClaimAt       int64           `gorm:"column:claim_at"`
 	Claimed       bool            `gorm:"column:claimed"`
+	AmountBase    decimal.Decimal `gorm:"column:amount_base"`
+	AmountExtra   decimal.Decimal `gorm:"column:amount_extra"`
 }
 
 func (l *UserActionsLogic) UserActions(req *types.UserActionsListReq) (resp *types.UserActionListResp, err error) {
@@ -67,6 +69,8 @@ WHERE ar.chain_id = ? AND ar.deleted_at IS NULL AND s.symbol = ? AND ar.epoch = 
        s.symbol, ar.address,
        ar.shares AS deposited,
        ar.amount AS rewards,
+       COALESCE(ar.amount_base, 0) AS amount_base,
+       COALESCE(ar.amount_extra, 0) AS amount_extra,
        ar.queued AS queued,
        ar.claimed,
 	   COALESCE(CAST(UNIX_TIMESTAMP(ar.claim_at) AS UNSIGNED), 0) AS claim_at
@@ -98,12 +102,14 @@ LIMIT ? OFFSET ?`
 					LockupPeriod:          r.LockupPeriod,
 					Symbol:                r.Symbol,
 				},
-				Address:   r.Address,
-				Deposited: r.Deposited.Mul(decimal.New(1, -8)).String(),
-				Rewards:   r.Rewards.Mul(decimal.New(1, -8)).String(),
-				Queued:    r.Queued.Mul(decimal.New(1, -8)).String(),
-				ClaimAt:   uint64(r.ClaimAt),
-				Claimed:   r.Claimed,
+				Address:     r.Address,
+				Deposited:   r.Deposited.Mul(decimal.New(1, -8)).String(),
+				Rewards:     r.Rewards.Mul(decimal.New(1, -8)).String(),
+				AmountBase:  r.AmountBase.Mul(decimal.New(1, -8)).String(),
+				AmountExtra: r.AmountExtra.Mul(decimal.New(1, -8)).String(),
+				Queued:      r.Queued.Mul(decimal.New(1, -8)).String(),
+				ClaimAt:     uint64(r.ClaimAt),
+				Claimed:     r.Claimed,
 			})
 		}
 
@@ -171,12 +177,14 @@ LIMIT ? OFFSET ?
 					LockupPeriod:          r.LockupPeriod,
 					Symbol:                r.Symbol,
 				},
-				Address:   r.Address,
-				Deposited: r.Deposited.Mul(decimal.New(1, -8)).String(),
-				Rewards:   r.Rewards.Mul(decimal.New(1, -8)).String(),
-				Queued:    r.Queued.Mul(decimal.New(1, -8)).String(),
-				ClaimAt:   uint64(0),
-				Claimed:   r.Claimed,
+				Address:     r.Address,
+				Deposited:   r.Deposited.Mul(decimal.New(1, -8)).String(),
+				Rewards:     r.Rewards.Mul(decimal.New(1, -8)).String(),
+				AmountBase:  r.AmountBase.Mul(decimal.New(1, -8)).String(),
+				AmountExtra: r.AmountExtra.Mul(decimal.New(1, -8)).String(),
+				Queued:      r.Queued.Mul(decimal.New(1, -8)).String(),
+				ClaimAt:     uint64(0),
+				Claimed:     r.Claimed,
 			})
 		}
 

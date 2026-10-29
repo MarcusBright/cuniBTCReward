@@ -48,6 +48,8 @@ type epochRow struct {
 	SubmitBy      string          `gorm:"column:submit_by"`
 	Creator       string          `gorm:"column:creator"`
 	CreatorAt     int64           `gorm:"column:creator_at"`
+	AmountBase    decimal.Decimal `gorm:"column:amount_base"`
+	AmountExtra   decimal.Decimal `gorm:"column:amount_extra"`
 }
 
 func (l *EpochListLogic) EpochList(req *types.EpochListReq) (resp *types.EpochListResp, err error) {
@@ -134,6 +136,8 @@ airdrop_agg AS (
     SELECT s.vault,
            a.epoch,
            COALESCE(SUM(a.amount), 0) AS rewards,
+           COALESCE(SUM(a.amount_base), 0) AS amount_base,
+           COALESCE(SUM(a.amount_extra), 0) AS amount_extra,
            COALESCE(SUM(CASE WHEN a.claimed = 1 THEN a.amount ELSE 0 END), 0) AS claimed
     FROM air_drop_records a
     JOIN strat s ON s.airdrop = a.contract
@@ -146,6 +150,8 @@ SELECT e.epoch, e.operate_start, e.operate_period,
        COALESCE(eta.participants, 0) AS participants,
        COALESCE(eta.tvl_trans, 0) + COALESCE(u.unclaimed_redeem, 0) AS tvl,
        COALESCE(aa.rewards, 0) AS rewards,
+       COALESCE(aa.amount_base, 0) AS amount_base,
+       COALESCE(aa.amount_extra, 0) AS amount_extra,
        COALESCE(aa.claimed, 0) AS claimed,
        COALESCE(ae.apy, 0) AS apy,
 	   COALESCE(eq.queued, 0) AS queued,
@@ -197,6 +203,8 @@ ORDER BY e.epoch DESC
 			Participants: r.Participants,
 			Tvl:          r.Tvl.Mul(decimal.New(1, -8)).String(),
 			Rewards:      r.Rewards.Mul(decimal.New(1, -8)).String(),
+			AmountBase:   r.AmountBase.Mul(decimal.New(1, -8)).String(),
+			AmountExtra:  r.AmountExtra.Mul(decimal.New(1, -8)).String(),
 			Claimed:      r.Claimed.Mul(decimal.New(1, -8)).String(),
 			Queued:       r.Queued.Mul(decimal.New(1, -8)).String(),
 			Apy:          r.Apy,
@@ -263,6 +271,8 @@ airdrop_agg AS (
     SELECT s.vault,
            a.epoch,
            COALESCE(SUM(a.amount), 0) AS rewards,
+           COALESCE(SUM(a.amount_base), 0) AS amount_base,
+           COALESCE(SUM(a.amount_extra), 0) AS amount_extra,
            COALESCE(SUM(CASE WHEN a.claimed = 1 THEN a.amount ELSE 0 END), 0) AS claimed
     FROM air_drop_records a
     JOIN strat s ON s.airdrop = a.contract
@@ -274,6 +284,8 @@ SELECT e.epoch, e.operate_start, e.operate_period,
        COALESCE(eta.participants, 0) AS participants,
        COALESCE(eta.tvl, 0) + COALESCE(u.unclaimed_redeem, 0) AS tvl,
        COALESCE(aa.rewards, 0) AS rewards,
+       COALESCE(aa.amount_base, 0) AS amount_base,
+       COALESCE(aa.amount_extra, 0) AS amount_extra,
        COALESCE(aa.claimed, 0) AS claimed,
        COALESCE(ae.apy, 0) AS apy,
        ae.root,

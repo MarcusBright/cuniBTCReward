@@ -1371,9 +1371,21 @@
         "submitAt",
         "submitBy",
         "creator",
-        "creatorAt"
+        "creatorAt",
+        "amountBase",
+        "amountExtra"
       ],
       "properties": {
+        "amountBase": {
+          "description": "base rewards, human readable",
+          "type": "string",
+          "example": "0.23"
+        },
+        "amountExtra": {
+          "description": "extra rewards, human readable",
+          "type": "string",
+          "example": "0.11"
+        },
         "apy": {
           "type": "number",
           "example": 0.12345
@@ -1893,9 +1905,21 @@
       "required": [
         "total",
         "claimed",
-        "unClaimed"
+        "unClaimed",
+        "amountBase",
+        "amountExtra"
       ],
       "properties": {
+        "amountBase": {
+          "description": "base rewards, human readable",
+          "type": "string",
+          "example": "0.23"
+        },
+        "amountExtra": {
+          "description": "extra rewards, human readable",
+          "type": "string",
+          "example": "0.11"
+        },
         "claimed": {
           "type": "string",
           "example": "23.8"
@@ -2052,12 +2076,24 @@
         "rewards",
         "queued",
         "claimAt",
-        "claimed"
+        "claimed",
+        "amountBase",
+        "amountExtra"
       ],
       "properties": {
         "address": {
           "type": "string",
           "example": "0xbf63Fba8137ce3043289f1BDbdC1700f65ee1aAD"
+        },
+        "amountBase": {
+          "description": "base rewards, human readable",
+          "type": "string",
+          "example": "0.23"
+        },
+        "amountExtra": {
+          "description": "extra rewards, human readable",
+          "type": "string",
+          "example": "0.11"
         },
         "claimAt": {
           "type": "integer",
@@ -2434,9 +2470,9 @@
       "in": "header"
     }
   },
-  "x-date": "2026-09-17 12:04:15",
+  "x-date": "2026-10-29 14:36:30",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",
-  "x-goctl-version": "1.10.1"
+  "x-goctl-version": "1.10.2"
 }

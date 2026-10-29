@@ -28,15 +28,19 @@ func NewRewardSummaryLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Rew
 }
 
 type rewardSummaryRow struct {
-	Total     decimal.Decimal `gorm:"column:total_amount"`
-	Claimed   decimal.Decimal `gorm:"column:claimed_amount"`
-	UnClaimed decimal.Decimal `gorm:"column:unclaimed_amount"`
+	AmountBase  decimal.Decimal `gorm:"column:amount_base"`
+	AmountExtra decimal.Decimal `gorm:"column:amount_extra"`
+	Total       decimal.Decimal `gorm:"column:total_amount"`
+	Claimed     decimal.Decimal `gorm:"column:claimed_amount"`
+	UnClaimed   decimal.Decimal `gorm:"column:unclaimed_amount"`
 }
 
 func (l *RewardSummaryLogic) RewardSummary(req *types.RewardSummaryReq) (resp *types.RewardSummaryResp, err error) {
 	chainID := l.svcCtx.Config.DefaultChainId
 	sql := `SELECT
     COALESCE(SUM(amount), 0) AS total_amount,
+    COALESCE(SUM(a.amount_base), 0) AS amount_base,
+    COALESCE(SUM(a.amount_extra), 0) AS amount_extra,
     COALESCE(SUM(CASE WHEN claimed = 1 THEN amount ELSE 0 END), 0) AS claimed_amount,
     COALESCE(SUM(CASE WHEN claimed = 0 THEN amount ELSE 0 END), 0) AS unclaimed_amount
 FROM
@@ -55,9 +59,11 @@ WHERE s.deleted_at IS NULL AND a.deleted_at IS NULL AND ae.deleted_at IS NULL AN
 	}
 
 	resp = &types.RewardSummaryResp{
-		Total:     row.Total.Mul(decimal.New(1, -8)).String(),
-		Claimed:   row.Claimed.Mul(decimal.New(1, -8)).String(),
-		UnClaimed: row.UnClaimed.Mul(decimal.New(1, -8)).String(),
+		AmountBase:  row.AmountBase.Mul(decimal.New(1, -8)).String(),
+		AmountExtra: row.AmountExtra.Mul(decimal.New(1, -8)).String(),
+		Total:       row.Total.Mul(decimal.New(1, -8)).String(),
+		Claimed:     row.Claimed.Mul(decimal.New(1, -8)).String(),
+		UnClaimed:   row.UnClaimed.Mul(decimal.New(1, -8)).String(),
 	}
 
 	return
