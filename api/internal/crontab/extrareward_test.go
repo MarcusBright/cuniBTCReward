@@ -16,8 +16,13 @@ func Test_Reward(t *testing.T) {
 	if err != nil {
 		return
 	}
-	totalReward := decimal.New(1, 8)
-	err = distributeExtraReward(db, "b1uniBTC", 1790070192, 11155111, totalReward, "0xd20568150Fd34eD3D457530a2f14E6AEfa791FF3", "0x48bAdE1602D122146Cc3FB0D89ad7E6004321B81")
+	totalReward, err := decimal.NewFromString("0.123")
+	if err != nil {
+		t.Log(err)
+		return
+	}
+	totalReward = totalReward.Mul(decimal.New(1, 8))
+	err = distributeExtraReward(db, "b2uniBTC", 1792043966, 11155111, totalReward, "0x84252bf3f7B55970bF01bd127649ded42e11bDC1", "0x32377EDBC67e99bA3395D89E1f93A0ff26595ec7")
 	if err != nil {
 		t.Log("err:", err)
 	}
