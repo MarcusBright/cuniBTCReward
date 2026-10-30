@@ -1925,6 +1925,7 @@
           "example": "23.8"
         },
         "total": {
+          "description": "amountBase + amountExtra, human readable",
           "type": "string",
           "example": "12.34"
         },
@@ -2470,7 +2471,7 @@
       "in": "header"
     }
   },
-  "x-date": "2026-10-29 15:12:11",
+  "x-date": "2026-10-30 11:55:16",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",

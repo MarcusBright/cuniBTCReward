@@ -30,7 +30,6 @@ func NewRewardSummaryLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Rew
 type rewardSummaryRow struct {
 	AmountBase  decimal.Decimal `gorm:"column:amount_base"`
 	AmountExtra decimal.Decimal `gorm:"column:amount_extra"`
-	Total       decimal.Decimal `gorm:"column:total_amount"`
 	Claimed     decimal.Decimal `gorm:"column:claimed_amount"`
 	UnClaimed   decimal.Decimal `gorm:"column:unclaimed_amount"`
 }
@@ -54,7 +53,6 @@ extra_summary AS (
     ) rewards
 )
 SELECT
-    COALESCE(SUM(amount), 0) AS total_amount,
     COALESCE(SUM(a.amount_base), 0) AS amount_base,
     (SELECT amount_extra FROM extra_summary) AS amount_extra,
     COALESCE(SUM(CASE WHEN claimed = 1 THEN amount ELSE 0 END), 0) AS claimed_amount,
@@ -77,7 +75,7 @@ WHERE s.deleted_at IS NULL AND a.deleted_at IS NULL AND ae.deleted_at IS NULL AN
 	resp = &types.RewardSummaryResp{
 		AmountBase:  row.AmountBase.Mul(decimal.New(1, -8)).String(),
 		AmountExtra: row.AmountExtra.Mul(decimal.New(1, -8)).String(),
-		Total:       row.Total.Mul(decimal.New(1, -8)).String(),
+		Total:       row.AmountBase.Add(row.AmountExtra).Mul(decimal.New(1, -8)).String(),
 		Claimed:     row.Claimed.Mul(decimal.New(1, -8)).String(),
 		UnClaimed:   row.UnClaimed.Mul(decimal.New(1, -8)).String(),
 	}

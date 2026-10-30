@@ -22,7 +22,7 @@ func Test_Reward(t *testing.T) {
 		return
 	}
 	totalReward = totalReward.Mul(decimal.New(1, 8))
-	err = distributeExtraReward(db, "b2uniBTC", 1792043966, 11155111, totalReward, "0x84252bf3f7B55970bF01bd127649ded42e11bDC1", "0x32377EDBC67e99bA3395D89E1f93A0ff26595ec7")
+	err = distributeExtraReward(db, "b2uniBTC", 1793163148, 11155111, totalReward, "0x84252bf3f7B55970bF01bd127649ded42e11bDC1", "0x32377EDBC67e99bA3395D89E1f93A0ff26595ec7")
 	if err != nil {
 		t.Log("err:", err)
 	}

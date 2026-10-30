@@ -164,7 +164,7 @@ type RewardSummaryReq struct {
 }
 
 type RewardSummaryResp struct {
-	Total       string `json:"total,example=12.34"`
+	Total       string `json:"total,example=12.34"` //amountBase + amountExtra, human readable
 	Claimed     string `json:"claimed,example=23.8"`
 	UnClaimed   string `json:"unClaimed,example=23.8"`
 	AmountBase  string `json:"amountBase,example=0.23"`  //base rewards, human readable
