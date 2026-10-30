@@ -130,19 +130,19 @@ func TestProfileLineNoLockEarnsThroughoutEpoch(t *testing.T) {
 func TestProfileLineAPY(t *testing.T) {
 	principal := profileTestAmount("100")
 	for _, seconds := range []int64{3600, profileLineDay, 7 * profileLineDay} {
-		apy := profileLineAPY(profileTestAmount("0.01"), principal.Mul(decimal.NewFromInt(seconds)), seconds)
-		want := math.Expm1(math.Log1p(0.0001) * float64(365*profileLineDay) / float64(seconds))
+		apy := profileLineAPY(profileTestAmount("0.01"), principal.Mul(decimal.NewFromInt(seconds)))
+		want := 0.0001 * float64(365*profileLineDay) / float64(seconds)
 		if apy == nil || math.Abs(*apy-want) > 1e-12 {
 			t.Fatalf("APY for %ds: %v, expected %v", seconds, apy, want)
 		}
 	}
-	if profileLineAPY(principal, decimal.Zero, profileLineDay) != nil {
+	if profileLineAPY(principal, decimal.Zero) != nil {
 		t.Fatal("zero principal requires null APY")
 	}
-	if apy := profileLineAPY(decimal.Zero, principal, profileLineDay); apy == nil || *apy != 0 {
+	if apy := profileLineAPY(decimal.Zero, principal); apy == nil || *apy != 0 {
 		t.Fatal("zero return with positive principal requires zero APY")
 	}
-	if profileLineAPY(principal, decimal.NewFromInt(1), 1) != nil {
+	if profileLineAPY(decimal.New(1, 400), decimal.NewFromInt(1)) != nil {
 		t.Fatal("overflow requires null APY")
 	}
 }
@@ -176,7 +176,7 @@ func TestProfileLineAllFinalDayAPY(t *testing.T) {
 	epochs := []profileLineEpoch{{LockupPeriod: end, AmountBase: profileTestAmount("3.65"), Generated: true}}
 	resp := buildProfileLine("b2uniBTC", "All", 0, end, 7*profileLineDay, profileTestAmount("100"), nil, nil, epochs)
 	last := resp.Data[len(resp.Data)-1]
-	want := math.Expm1(math.Log1p(0.0001) * 365)
+	want := 0.0001 * 365
 	if last.AmountBase != "0.01" || last.Apy == nil || math.Abs(*last.Apy-want) > 1e-12 {
 		t.Fatalf("final partial week's daily APY: %+v", last)
 	}
@@ -198,5 +198,18 @@ func TestProfileLineRejectsLockedStrategies(t *testing.T) {
 		if err == nil || !strings.Contains(err.Error(), "only supports noLock") {
 			t.Fatalf("expected noLock validation error for %s, got %v", symbol, err)
 		}
+	}
+}
+
+func TestProfileLineSimpleAnnualizationSample(t *testing.T) {
+	rewards := profileTestAmount("0.25513469765486111111111111111111")
+	principalSeconds := profileTestAmount("1.2525").Mul(decimal.NewFromInt(profileLineDay))
+	apy := profileLineAPY(rewards, principalSeconds)
+	const expected = 74.35063045431082
+	if apy == nil {
+		t.Fatal("expected a finite simple annualized return")
+	}
+	if math.Abs(*apy-expected) > 1e-10 {
+		t.Fatalf("expected simple annualized return %v, got %v", expected, *apy)
 	}
 }

@@ -314,7 +314,7 @@ type (
 	ProfileLinePoint {
 		StartTime          int64    `json:"startTime"` //inclusive Unix timestamp
 		EndTime            int64    `json:"endTime"` //exclusive Unix timestamp
-		Apy                *float64 `json:"apy"` //compound annualized bucket return; null if principal is zero or result is not finite
+		Apy                *float64 `json:"apy"` //simple annualized bucket return (APR); null if principal is zero or result is not finite
 		AmountBase         string   `json:"amountBase"` //estimated base rewards allocated by epoch duration, human readable
 		AmountExtra        string   `json:"amountExtra"` //extra rewards by original accrual timestamp, human readable
 		Rewards            string   `json:"rewards"` //amountBase + amountExtra, human readable

@@ -39,8 +39,8 @@ Each bucket contains:
 - `effectivePrincipal`: eligible principal weighted by seconds of participation.
   Uses the running signed balance across the vault and redeem router throughout
   the bucket, without locking or queued-deposit exclusions.
-- `apy`: compound annualized return,
-  `(1 + rewards / effectivePrincipal)^(31536000 / bucketSeconds) - 1`.
+- `apy`: simple annualized return (APR), retaining the existing field name,
+  `rewards / effectivePrincipal * 31536000 / bucketSeconds`.
   `0.05` means 5%. Returns `null` for zero principal or a result outside finite
   floating-point range; positive principal with zero rewards returns `0`.
 - `baseRewardComplete`: false when an overlapping earning epoch has no generated
@@ -50,7 +50,8 @@ Each bucket contains:
 
 All amount calculations use Decimal; base allocation preserves epoch totals
 using cumulative allocation at bucket boundaries, with precision to 24 decimal
-places in raw units. APY alone uses floating-point logarithms/exponentiation.
+places in raw units. Annualization is also calculated with Decimal; only the
+final `apy` value is converted to floating point for the response.
 The query uses a consistent read snapshot and a fixed number of database queries,
 not one query per bucket. Extra rewards are scoped by symbol, since the existing
 `extra_reward_dis` schema has no chain ID; symbols in that table must identify the

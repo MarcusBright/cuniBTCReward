@@ -91,7 +91,7 @@ func buildProfileLine(symbol, rangeValue string, start, end, step int64,
 		rewards := base.Add(extra)
 		resp.Data = append(resp.Data, types.ProfileLinePoint{
 			StartTime: bucketStart, EndTime: bucketEnd,
-			Apy:        profileLineAPY(rewards, principalSeconds, duration),
+			Apy:        profileLineAPY(rewards, principalSeconds),
 			AmountBase: profileLineAmount(base), AmountExtra: profileLineAmount(extra),
 			Rewards: profileLineAmount(rewards), Deposited: profileLineAmount(deposited),
 			EffectivePrincipal: profileLineAmount(principal), BaseRewardComplete: complete,
@@ -140,16 +140,13 @@ func profileLineAmount(amount decimal.Decimal) string {
 	return amount.Shift(-8).String()
 }
 
-func profileLineAPY(rewards, principalSeconds decimal.Decimal, duration int64) *float64 {
+func profileLineAPY(rewards, principalSeconds decimal.Decimal) *float64 {
 	if !principalSeconds.IsPositive() {
 		return nil
 	}
-	// Compound return using the actual bucket duration, including All's final day.
-	ratio, _ := rewards.Mul(decimal.NewFromInt(duration)).DivRound(principalSeconds, 32).Float64()
-	if ratio < -1 {
-		return nil
-	}
-	apy := math.Expm1(math.Log1p(ratio) * float64(365*profileLineDay) / float64(duration))
+	// Simple annualization: rewards / average principal * year / bucket duration.
+	// average principal = principalSeconds / bucket duration, so duration cancels.
+	apy, _ := rewards.Mul(decimal.NewFromInt(365*profileLineDay)).DivRound(principalSeconds, 32).Float64()
 	if math.IsNaN(apy) || math.IsInf(apy, 0) {
 		return nil // JSON cannot represent non-finite values.
 	}
