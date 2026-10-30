@@ -55,6 +55,18 @@ func (l *ProfileLineLogic) ProfileLine(req *types.ProfileLineReq) (resp *types.P
 		if err := tx.Where("chain_id = ? AND symbol = ?", chainID, req.Symbol).First(&strategy).Error; err != nil {
 			return err
 		}
+		var history struct {
+			StartTime *int64
+		}
+		if err := tx.Model(&model.Epoch{}).Select("MIN(operate_start) AS start_time").
+			Where("chain_id = ? AND contract = ? AND deleted_at IS NULL", chainID, strategy.Vault).
+			Scan(&history).Error; err != nil {
+			return err
+		}
+		start = profileLineHistoryStart(start, end, history.StartTime)
+		if start == end {
+			return nil
+		}
 		epochSQL := `SELECT e.epoch, e.operate_start, e.lockup_start, e.lockup_period,
     COALESCE(a.amount_base, 0) AS amount_base, COALESCE(a.record_count, 0) > 0 AS base_generated
 FROM epoches e

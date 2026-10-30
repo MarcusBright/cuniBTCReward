@@ -17,8 +17,15 @@ distribution interface. Other symbols return a validation error before database 
 
 `range` accepts exactly `24H`, `7D`, `30D`, or `All`. Windows end at the
 request's current Unix second. Buckets are rolling intervals, not calendar days:
-24 hourly buckets, 7 daily buckets, 30 daily buckets, or 53 buckets covering
-365 days (52 weeks followed by one day). All boundaries use `[startTime, endTime)`.
+at most 24 hourly buckets, 7 daily buckets, 30 daily buckets, or 53 buckets
+covering 365 days (52 weeks followed by one day for a full year).
+The actual start is the later of the requested start and this strategy's earliest
+non-deleted epoch `operate_start`, scoped to the configured chain and vault.
+No points are generated before that time. If there are no epochs yet or all
+epochs are in the future, `data` is `[]`, `deposited` is `"0"`, and `startTime`
+equals `endTime`. Missing activity after the start still produces zero buckets.
+Buckets advance from the actual start; the final bucket may be shorter and uses
+its actual duration for annualization. All boundaries use `[startTime, endTime)`.
 The normal `code`, `msg`, `data` response envelope applies.
 
 Inside `data`, fields are ordered `symbol`, `range`, `deposited`, `startTime`,

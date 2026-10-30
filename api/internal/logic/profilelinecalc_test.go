@@ -234,3 +234,60 @@ func TestProfileLineRawUnitFloor(t *testing.T) {
 		}
 	}
 }
+
+func TestProfileLineClipsToAvailableHistory(t *testing.T) {
+	const end int64 = 1800000123
+	for _, tc := range []struct {
+		name       string
+		rangeValue string
+		age        int64
+		noHistory  bool
+		points     int
+	}{
+		{"new system yearly", "All", 10 * profileLineDay, false, 2},
+		{"new system monthly", "30D", 3*profileLineDay + 3600, false, 4},
+		{"new system weekly", "7D", 2 * profileLineDay, false, 2},
+		{"new system hourly", "24H", 2*3600 + 1800, false, 3},
+		{"established system", "All", 400 * profileLineDay, false, 53},
+		{"no epochs", "All", 0, true, 0},
+		{"future epoch", "7D", -3600, false, 0},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			requestedStart, step, err := profileLineRange(tc.rangeValue, end)
+			if err != nil {
+				t.Fatal(err)
+			}
+			firstEpoch := end - tc.age
+			var first *int64
+			if !tc.noHistory {
+				first = &firstEpoch
+			}
+			start := profileLineHistoryStart(requestedStart, end, first)
+			resp := buildProfileLine("b2uniBTC", tc.rangeValue, start, end, step, decimal.Zero, nil, nil, nil)
+			if len(resp.Data) != tc.points || resp.StartTime < requestedStart || resp.StartTime > end {
+				t.Fatalf("unexpected history window: %+v", resp)
+			}
+			if first != nil && firstEpoch < end && resp.StartTime < firstEpoch {
+				t.Fatal("response starts before recorded history")
+			}
+			if tc.points == 0 && (resp.StartTime != end || resp.Deposited != "0" || resp.Data == nil) {
+				t.Fatalf("empty history must serialize as an empty data array: %+v", resp)
+			}
+		})
+	}
+}
+
+func TestProfileLineClippedWindowDepositTotal(t *testing.T) {
+	firstEpoch := int64(100)
+	start := profileLineHistoryStart(0, 200, &firstEpoch)
+	events := []profileLineEvent{
+		{Timestamp: 99, Deposited: profileTestAmount("999")},
+		{Timestamp: 100, Amount: profileTestAmount("1"), Deposited: profileTestAmount("1")},
+		{Timestamp: 199, Amount: profileTestAmount("2"), Deposited: profileTestAmount("2")},
+		{Timestamp: 200, Deposited: profileTestAmount("999")},
+	}
+	resp := buildProfileLine("b2uniBTC", "7D", start, 200, 60, decimal.Zero, events, nil, nil)
+	if resp.Deposited != "3" || len(resp.Data) != 2 || resp.Data[1].EndTime-resp.Data[1].StartTime != 40 {
+		t.Fatalf("clipped deposits/partial final bucket: %+v", resp)
+	}
+}

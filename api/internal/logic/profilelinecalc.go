@@ -43,6 +43,15 @@ func profileLineRange(value string, end int64) (start, step int64, err error) {
 	return end - duration, step, nil
 }
 
+// Do not synthesize points before the strategy's first recorded earning epoch.
+// No epochs, or a strategy whose first epoch is in the future, has no history yet.
+func profileLineHistoryStart(start, end int64, firstEpochStart *int64) int64 {
+	if firstEpochStart == nil {
+		return end
+	}
+	return min(end, max(start, *firstEpochStart))
+}
+
 // Inputs are ordered by timestamp. Amounts stay in raw token units until serialization.
 func buildProfileLine(symbol, rangeValue string, start, end, step int64,
 	opening decimal.Decimal, events, extras []profileLineEvent, epochs []profileLineEpoch,
