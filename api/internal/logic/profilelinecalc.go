@@ -23,7 +23,7 @@ type profileLineEpoch struct {
 	LockupStart  int64
 	LockupPeriod int64
 	AmountBase   decimal.Decimal
-	Generated    bool
+	Generated    bool `gorm:"column:base_generated"`
 }
 
 func profileLineRange(value string, end int64) (start, step int64, err error) {

@@ -53,7 +53,7 @@ func (l *ProfileLineLogic) ProfileLine(req *types.ProfileLineReq) (resp *types.P
 			return err
 		}
 		epochSQL := `SELECT e.epoch, e.operate_start, e.lockup_start, e.lockup_period,
-    COALESCE(a.amount_base, 0) AS amount_base, COALESCE(a.record_count, 0) > 0 AS generated
+    COALESCE(a.amount_base, 0) AS amount_base, COALESCE(a.record_count, 0) > 0 AS base_generated
 FROM epoches e
 LEFT JOIN (
     SELECT epoch, SUM(amount_base) AS amount_base, COUNT(*) AS record_count
