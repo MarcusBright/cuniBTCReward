@@ -328,7 +328,7 @@ func (l *DistributeRewardsLogic) DistributeRewardsNoLock(req *types.DistributeRe
         address,
         SUM(amount) AS total_extra_profit,
         SUM(share) AS total_extra_share,
-        last_deposit_time
+        MAX(last_deposit_time) AS last_deposit_time
     FROM extra_reward_dis
     WHERE timestamp >= ? -- period start
       AND timestamp < ? -- peroid end
