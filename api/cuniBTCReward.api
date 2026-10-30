@@ -298,10 +298,39 @@ type (
 	}
 )
 
+type (
+	ProfileLineReq {
+		Symbol string `json:"symbol"`
+		Range  string `json:"range,options=24H|7D|30D|All"`
+	}
+	ProfileLineResp {
+		Symbol    string             `json:"symbol"`
+		Range     string             `json:"range"`
+		Deposited string             `json:"deposited"` //new deposits across the entire range, human readable
+		StartTime int64              `json:"startTime"`
+		EndTime   int64              `json:"endTime"`
+		Data      []ProfileLinePoint `json:"data"`
+	}
+	ProfileLinePoint {
+		StartTime          int64    `json:"startTime"` //inclusive Unix timestamp
+		EndTime            int64    `json:"endTime"` //exclusive Unix timestamp
+		Apy                *float64 `json:"apy"` //compound annualized bucket return; null if principal is zero or result is not finite
+		AmountBase         string   `json:"amountBase"` //estimated base rewards allocated by epoch duration, human readable
+		AmountExtra        string   `json:"amountExtra"` //extra rewards by original accrual timestamp, human readable
+		Rewards            string   `json:"rewards"` //amountBase + amountExtra, human readable
+		Deposited          string   `json:"deposited"` //new deposits within this bucket, human readable
+		EffectivePrincipal string   `json:"effectivePrincipal"` //time-weighted eligible principal, human readable
+		BaseRewardComplete bool     `json:"baseRewardComplete"` //false if any overlapping earning epoch has no generated base rewards
+	}
+)
+
 @server (
 	prefix: /api/v1
 )
 service cuniBTCReward {
+	@handler ProfileLine
+	post /profileline (ProfileLineReq) returns (ProfileLineResp)
+
 	@handler CurrentEpoch
 	post /currentEpoch (CurrentEpochReq) returns ([]uint64)
 

@@ -116,6 +116,32 @@ type PositionOverviewResp struct {
 	TotalRewards string `json:"totalRewards,example=0.023243"` //amount withdrawing human readable
 }
 
+type ProfileLinePoint struct {
+	StartTime          int64    `json:"startTime"`          //inclusive Unix timestamp
+	EndTime            int64    `json:"endTime"`            //exclusive Unix timestamp
+	Apy                *float64 `json:"apy"`                //compound annualized bucket return; null if principal is zero or result is not finite
+	AmountBase         string   `json:"amountBase"`         //estimated base rewards allocated by epoch duration, human readable
+	AmountExtra        string   `json:"amountExtra"`        //extra rewards by original accrual timestamp, human readable
+	Rewards            string   `json:"rewards"`            //amountBase + amountExtra, human readable
+	Deposited          string   `json:"deposited"`          //new deposits within this bucket, human readable
+	EffectivePrincipal string   `json:"effectivePrincipal"` //time-weighted eligible principal, human readable
+	BaseRewardComplete bool     `json:"baseRewardComplete"` //false if any overlapping earning epoch has no generated base rewards
+}
+
+type ProfileLineReq struct {
+	Symbol string `json:"symbol"`
+	Range  string `json:"range,options=24H|7D|30D|All"`
+}
+
+type ProfileLineResp struct {
+	Symbol    string             `json:"symbol"`
+	Range     string             `json:"range"`
+	Deposited string             `json:"deposited"` //new deposits across the entire range, human readable
+	StartTime int64              `json:"startTime"`
+	EndTime   int64              `json:"endTime"`
+	Data      []ProfileLinePoint `json:"data"`
+}
+
 type QueuedInfo struct {
 	Address  string `json:"address,example=0xbf63Fba8137ce3043289f1BDbdC1700f65ee1aAD"`
 	Queued   string `json:"queued,example=2.34"`

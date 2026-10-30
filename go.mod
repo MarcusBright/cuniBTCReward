@@ -12,7 +12,6 @@ require (
 	github.com/spruceid/siwe-go v0.2.1
 	github.com/swaggest/swgui v1.8.7
 	github.com/zeromicro/go-zero v1.10.1
-	go.opentelemetry.io/otel/trace v1.40.0
 	golang.org/x/crypto v0.48.0
 	golang.org/x/time v0.14.0
 	gorm.io/driver/mysql v1.6.0
@@ -84,6 +83,7 @@ require (
 	go.opentelemetry.io/otel/exporters/zipkin v1.40.0 // indirect
 	go.opentelemetry.io/otel/metric v1.40.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.40.0 // indirect
+	go.opentelemetry.io/otel/trace v1.40.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.9.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/automaxprocs v1.6.0 // indirect

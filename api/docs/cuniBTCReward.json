@@ -846,6 +846,54 @@
         }
       }
     },
+    "/api/v1/profileline": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "summary": "ProfileLine",
+        "operationId": "profileLine",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ProfileLineReq"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "description": "business code",
+                  "type": "integer",
+                  "example": 0
+                },
+                "data": {
+                  "$ref": "#/definitions/ProfileLineResp"
+                },
+                "msg": {
+                  "description": "business message",
+                  "type": "string",
+                  "example": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/rewardProofs": {
       "post": {
         "consumes": [
@@ -1702,6 +1750,114 @@
         }
       }
     },
+    "ProfileLinePoint": {
+      "type": "object",
+      "required": [
+        "startTime",
+        "endTime",
+        "apy",
+        "amountBase",
+        "amountExtra",
+        "rewards",
+        "deposited",
+        "effectivePrincipal",
+        "baseRewardComplete"
+      ],
+      "properties": {
+        "amountBase": {
+          "description": "estimated base rewards allocated by epoch duration, human readable",
+          "type": "string"
+        },
+        "amountExtra": {
+          "description": "extra rewards by original accrual timestamp, human readable",
+          "type": "string"
+        },
+        "apy": {
+          "description": "compound annualized bucket return; null if principal is zero or result is not finite",
+          "type": "number"
+        },
+        "baseRewardComplete": {
+          "description": "false if any overlapping earning epoch has no generated base rewards",
+          "type": "boolean"
+        },
+        "deposited": {
+          "description": "new deposits within this bucket, human readable",
+          "type": "string"
+        },
+        "effectivePrincipal": {
+          "description": "time-weighted eligible principal, human readable",
+          "type": "string"
+        },
+        "endTime": {
+          "description": "exclusive Unix timestamp",
+          "type": "integer"
+        },
+        "rewards": {
+          "description": "amountBase + amountExtra, human readable",
+          "type": "string"
+        },
+        "startTime": {
+          "description": "inclusive Unix timestamp",
+          "type": "integer"
+        }
+      }
+    },
+    "ProfileLineReq": {
+      "type": "object",
+      "required": [
+        "symbol",
+        "range"
+      ],
+      "properties": {
+        "range": {
+          "type": "string",
+          "enum": [
+            "24H",
+            "7D",
+            "30D",
+            "All"
+          ]
+        },
+        "symbol": {
+          "type": "string"
+        }
+      }
+    },
+    "ProfileLineResp": {
+      "type": "object",
+      "required": [
+        "symbol",
+        "range",
+        "deposited",
+        "startTime",
+        "endTime",
+        "data"
+      ],
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ProfileLinePoint"
+          }
+        },
+        "deposited": {
+          "description": "new deposits across the entire range, human readable",
+          "type": "string"
+        },
+        "endTime": {
+          "type": "integer"
+        },
+        "range": {
+          "type": "string"
+        },
+        "startTime": {
+          "type": "integer"
+        },
+        "symbol": {
+          "type": "string"
+        }
+      }
+    },
     "QueuedInfo": {
       "type": "object",
       "required": [
@@ -2471,7 +2627,7 @@
       "in": "header"
     }
   },
-  "x-date": "2026-10-30 11:55:16",
+  "x-date": "2026-10-30 14:45:21",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",
