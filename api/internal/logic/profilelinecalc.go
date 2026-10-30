@@ -69,8 +69,8 @@ func buildProfileLine(symbol, rangeValue string, start, end, step int64,
 				// Cumulative allocation makes adjacent buckets telescope, preserving the
 				// epoch total even when its duration is not divisible by bucket size.
 				allocation := func(at int64) decimal.Decimal {
-					return epoch.AmountBase.Mul(decimal.NewFromInt(at-earningStart)).
-						DivRound(decimal.NewFromInt(earningEnd-earningStart), 24)
+					return profileLineFloorAmount(epoch.AmountBase.Mul(decimal.NewFromInt(at-earningStart)),
+						decimal.NewFromInt(earningEnd-earningStart))
 				}
 				base = base.Add(allocation(right).Sub(allocation(left)))
 			}
@@ -87,7 +87,7 @@ func buildProfileLine(symbol, rangeValue string, start, end, step int64,
 			}
 		}
 		duration := bucketEnd - bucketStart
-		principal := principalSeconds.DivRound(decimal.NewFromInt(duration), 24)
+		principal := profileLineFloorAmount(principalSeconds, decimal.NewFromInt(duration))
 		rewards := base.Add(extra)
 		resp.Data = append(resp.Data, types.ProfileLinePoint{
 			StartTime: bucketStart, EndTime: bucketEnd,
@@ -134,6 +134,16 @@ func profileLinePrincipalSeconds(opening decimal.Decimal, events []profileLineEv
 		total = total.Add(balance.Mul(decimal.NewFromInt(end - cursor)))
 	}
 	return total
+}
+
+// Divide exactly and floor in raw token units. QuoRem avoids rounding a value
+// just below an integer up to that integer before flooring. Denominators are positive.
+func profileLineFloorAmount(amount, divisor decimal.Decimal) decimal.Decimal {
+	quotient, remainder := amount.QuoRem(divisor, 0)
+	if remainder.IsNegative() {
+		return quotient.Sub(decimal.NewFromInt(1))
+	}
+	return quotient
 }
 
 func profileLineAmount(amount decimal.Decimal) string {

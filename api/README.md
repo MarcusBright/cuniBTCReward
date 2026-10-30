@@ -49,8 +49,11 @@ Each bucket contains:
   base estimates and APYs. Root confirmation is not required for these estimates.
 
 All amount calculations use Decimal; base allocation preserves epoch totals
-using cumulative allocation at bucket boundaries, with precision to 24 decimal
-places in raw units. Annualization is also calculated with Decimal; only the
+using cumulative allocation at bucket boundaries, flooring each cumulative
+amount in raw token units. Average principal is also floored in raw units before
+serialization. Returned amount strings therefore have at most 8 decimal places.
+Annualization uses the unrounded principal-seconds and Decimal division to retain
+fractional rates (it is not floored to an integer); only the
 final `apy` value is converted to floating point for the response.
 The query uses a consistent read snapshot and a fixed number of database queries,
 not one query per bucket. Extra rewards are scoped by symbol, since the existing

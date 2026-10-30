@@ -102,11 +102,8 @@ func TestProfileLineBaseAllocationAndCompleteness(t *testing.T) {
 		t.Fatalf("allocation lost rounding remainder: %s", total)
 	}
 	partial := buildProfileLine("b2uniBTC", "24H", 2, 5, 3, profileTestAmount("10"), nil, nil, epochs)
-	expected := decimal.NewFromInt(5).DivRound(decimal.NewFromInt(7), 24).
-		Sub(decimal.NewFromInt(2).DivRound(decimal.NewFromInt(7), 24))
-	actual := decimal.RequireFromString(partial.Data[0].AmountBase)
-	if actual.Sub(expected).Abs().GreaterThan(decimal.New(1, -24)) {
-		t.Fatalf("clipped epoch allocation: %s, expected %s", actual, expected)
+	if partial.Data[0].AmountBase != "0.42857143" {
+		t.Fatalf("clipped epoch allocation must use floored cumulative raw amounts: %s", partial.Data[0].AmountBase)
 	}
 }
 
@@ -211,5 +208,29 @@ func TestProfileLineSimpleAnnualizationSample(t *testing.T) {
 	}
 	if math.Abs(*apy-expected) > 1e-10 {
 		t.Fatalf("expected simple annualized return %v, got %v", expected, *apy)
+	}
+}
+
+func TestProfileLineRawUnitFloor(t *testing.T) {
+	epochs := []profileLineEpoch{{LockupPeriod: 3, AmountBase: decimal.NewFromInt(1), Generated: true}}
+	resp := buildProfileLine("b2uniBTC", "24H", 0, 3, 1, decimal.NewFromInt(1), nil, nil, epochs)
+	for i, expected := range []string{"0", "0", "0.00000001"} {
+		if resp.Data[i].AmountBase != expected || resp.Data[i].Rewards != expected {
+			t.Fatalf("raw-unit allocation bucket %d: %+v", i, resp.Data[i])
+		}
+	}
+	events := []profileLineEvent{{Timestamp: 1, Amount: decimal.NewFromInt(1)}}
+	weighted := buildProfileLine("b2uniBTC", "24H", 0, 3, 3, decimal.NewFromInt(1), events, nil, nil)
+	if weighted.Data[0].EffectivePrincipal != "0.00000001" {
+		t.Fatalf("weighted principal must floor 5/3 raw units: %+v", weighted.Data[0])
+	}
+	for _, tc := range []struct{ amount, divisor, expected string }{
+		{"0.999999999999999999999999999999999999", "1", "0"},
+		{"-1", "3", "-1"}, {"5", "3", "1"},
+	} {
+		got := profileLineFloorAmount(decimal.RequireFromString(tc.amount), decimal.RequireFromString(tc.divisor))
+		if got.String() != tc.expected {
+			t.Fatalf("floor(%s/%s) = %s, expected %s", tc.amount, tc.divisor, got, tc.expected)
+		}
 	}
 }
