@@ -1819,6 +1819,7 @@
           ]
         },
         "symbol": {
+          "description": "noLock only; currently b2uniBTC",
           "type": "string"
         }
       }
@@ -2627,7 +2628,7 @@
       "in": "header"
     }
   },
-  "x-date": "2026-10-30 14:45:21",
+  "x-date": "2026-10-30 15:16:52",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",

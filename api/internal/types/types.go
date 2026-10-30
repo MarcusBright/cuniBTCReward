@@ -129,7 +129,7 @@ type ProfileLinePoint struct {
 }
 
 type ProfileLineReq struct {
-	Symbol string `json:"symbol"`
+	Symbol string `json:"symbol"` //noLock only; currently b2uniBTC
 	Range  string `json:"range,options=24H|7D|30D|All"`
 }
 

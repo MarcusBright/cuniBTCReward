@@ -31,7 +31,7 @@ func TestProfileLineRanges(t *testing.T) {
 			if err != nil || start != end-tc.days*profileLineDay {
 				t.Fatalf("range: %d %d %v", start, step, err)
 			}
-			resp := buildProfileLine("b2uniBTC", tc.value, start, end, step, true, decimal.Zero, nil, nil, nil)
+			resp := buildProfileLine("b2uniBTC", tc.value, start, end, step, decimal.Zero, nil, nil, nil)
 			if len(resp.Data) != tc.points || resp.StartTime != start || resp.EndTime != end {
 				t.Fatalf("unexpected boundaries/count: %+v", resp)
 			}
@@ -67,7 +67,7 @@ func TestProfileLineDepositsAndWeightedPrincipal(t *testing.T) {
 		{Timestamp: 200, Amount: profileTestAmount("0.002")},
 		{Timestamp: 300, Amount: profileTestAmount("999")},
 	}
-	resp := buildProfileLine("b2uniBTC", "24H", 100, 300, 100, true, decimal.Zero, events, extras, nil)
+	resp := buildProfileLine("b2uniBTC", "24H", 100, 300, 100, decimal.Zero, events, extras, nil)
 	if resp.Deposited != "7" || resp.Data[0].Deposited != "3" || resp.Data[1].Deposited != "4" {
 		t.Fatalf("deposit totals/boundaries: %+v", resp)
 	}
@@ -87,7 +87,7 @@ func TestProfileLineBaseAllocationAndCompleteness(t *testing.T) {
 		{OperateStart: 0, LockupStart: 0, LockupPeriod: 7, AmountBase: profileTestAmount("1"), Generated: true},
 		{OperateStart: 7, LockupStart: 7, LockupPeriod: 7, Generated: false},
 	}
-	resp := buildProfileLine("b2uniBTC", "24H", 0, 14, 3, true, profileTestAmount("10"), nil, nil, epochs)
+	resp := buildProfileLine("b2uniBTC", "24H", 0, 14, 3, profileTestAmount("10"), nil, nil, epochs)
 	total := decimal.Zero
 	for _, point := range resp.Data {
 		total = total.Add(decimal.RequireFromString(point.AmountBase))
@@ -101,7 +101,7 @@ func TestProfileLineBaseAllocationAndCompleteness(t *testing.T) {
 	if !total.Equal(decimal.NewFromInt(1)) {
 		t.Fatalf("allocation lost rounding remainder: %s", total)
 	}
-	partial := buildProfileLine("b2uniBTC", "24H", 2, 5, 3, true, profileTestAmount("10"), nil, nil, epochs)
+	partial := buildProfileLine("b2uniBTC", "24H", 2, 5, 3, profileTestAmount("10"), nil, nil, epochs)
 	expected := decimal.NewFromInt(5).DivRound(decimal.NewFromInt(7), 24).
 		Sub(decimal.NewFromInt(2).DivRound(decimal.NewFromInt(7), 24))
 	actual := decimal.RequireFromString(partial.Data[0].AmountBase)
@@ -110,7 +110,7 @@ func TestProfileLineBaseAllocationAndCompleteness(t *testing.T) {
 	}
 }
 
-func TestProfileLineLockedSharesExcludeQueuedDeposits(t *testing.T) {
+func TestProfileLineNoLockEarnsThroughoutEpoch(t *testing.T) {
 	epochs := []profileLineEpoch{{OperateStart: 0, LockupStart: 100, LockupPeriod: 100,
 		AmountBase: profileTestAmount("0.01"), Generated: true}}
 	events := []profileLineEvent{
@@ -118,12 +118,12 @@ func TestProfileLineLockedSharesExcludeQueuedDeposits(t *testing.T) {
 		{Timestamp: 100, Amount: profileTestAmount("3"), Deposited: profileTestAmount("3")},
 		{Timestamp: 150, Amount: profileTestAmount("5"), Deposited: profileTestAmount("5")},
 	}
-	resp := buildProfileLine("cuniBTC", "24H", 0, 200, 100, false, decimal.Zero, events, nil, epochs)
-	if resp.Data[0].EffectivePrincipal != "0" || resp.Data[0].Apy != nil || resp.Data[0].AmountBase != "0" {
-		t.Fatalf("operate period must not earn locked base: %+v", resp.Data[0])
+	resp := buildProfileLine("b2uniBTC", "24H", 0, 200, 100, decimal.Zero, events, nil, epochs)
+	if resp.Data[0].EffectivePrincipal != "1" || resp.Data[0].AmountBase != "0.005" {
+		t.Fatalf("noLock must earn during operate period: %+v", resp.Data[0])
 	}
-	if resp.Data[1].EffectivePrincipal != "2" || resp.Data[1].AmountBase != "0.01" || resp.Deposited != "10" {
-		t.Fatalf("locked principal/rewards/deposits: %+v", resp)
+	if resp.Data[1].EffectivePrincipal != "7.5" || resp.Data[1].AmountBase != "0.005" || resp.Deposited != "10" {
+		t.Fatalf("noLock must use changing balances throughout epoch: %+v", resp)
 	}
 }
 
@@ -148,7 +148,7 @@ func TestProfileLineAPY(t *testing.T) {
 }
 
 func TestProfileLineJSONContract(t *testing.T) {
-	resp := buildProfileLine("b2uniBTC", "24H", 0, 3600, 3600, true, decimal.Zero, nil, nil, nil)
+	resp := buildProfileLine("b2uniBTC", "24H", 0, 3600, 3600, decimal.Zero, nil, nil, nil)
 	encoded, err := json.Marshal(resp)
 	if err != nil {
 		t.Fatal(err)
@@ -164,7 +164,7 @@ func TestProfileLineOverlappingEpochs(t *testing.T) {
 		{OperateStart: 150, LockupStart: 150, LockupPeriod: 100, AmountBase: profileTestAmount("2"), Generated: true},
 	}
 	extras := []profileLineEvent{{Timestamp: 150, Amount: profileTestAmount("0.1")}}
-	resp := buildProfileLine("b2uniBTC", "24H", 100, 200, 100, true, profileTestAmount("10"), nil, extras, epochs)
+	resp := buildProfileLine("b2uniBTC", "24H", 100, 200, 100, profileTestAmount("10"), nil, extras, epochs)
 	point := resp.Data[0]
 	if point.AmountBase != "1.5" || point.AmountExtra != "0.1" || point.Rewards != "1.6" || !point.BaseRewardComplete {
 		t.Fatalf("cross-epoch allocation: %+v", point)
@@ -174,7 +174,7 @@ func TestProfileLineOverlappingEpochs(t *testing.T) {
 func TestProfileLineAllFinalDayAPY(t *testing.T) {
 	end := 365 * profileLineDay
 	epochs := []profileLineEpoch{{LockupPeriod: end, AmountBase: profileTestAmount("3.65"), Generated: true}}
-	resp := buildProfileLine("b2uniBTC", "All", 0, end, 7*profileLineDay, true, profileTestAmount("100"), nil, nil, epochs)
+	resp := buildProfileLine("b2uniBTC", "All", 0, end, 7*profileLineDay, profileTestAmount("100"), nil, nil, epochs)
 	last := resp.Data[len(resp.Data)-1]
 	want := math.Expm1(math.Log1p(0.0001) * 365)
 	if last.AmountBase != "0.01" || last.Apy == nil || math.Abs(*last.Apy-want) > 1e-12 {
@@ -187,6 +187,16 @@ func TestProfileLineInvalidRequest(t *testing.T) {
 	for _, req := range []types.ProfileLineReq{{Symbol: "b2uniBTC", Range: "1D"}, {Range: "7D"}} {
 		if _, err := logic.ProfileLine(&req); err == nil {
 			t.Fatalf("invalid request accepted: %+v", req)
+		}
+	}
+}
+
+func TestProfileLineRejectsLockedStrategies(t *testing.T) {
+	logic := NewProfileLineLogic(t.Context(), nil)
+	for _, symbol := range []string{"cuniBTC", "suniBTC", "b1uniBTC", "unknown"} {
+		_, err := logic.ProfileLine(&types.ProfileLineReq{Symbol: symbol, Range: "7D"})
+		if err == nil || !strings.Contains(err.Error(), "only supports noLock") {
+			t.Fatalf("expected noLock validation error for %s, got %v", symbol, err)
 		}
 	}
 }

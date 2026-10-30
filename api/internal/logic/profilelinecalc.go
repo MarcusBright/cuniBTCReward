@@ -44,7 +44,7 @@ func profileLineRange(value string, end int64) (start, step int64, err error) {
 }
 
 // Inputs are ordered by timestamp. Amounts stay in raw token units until serialization.
-func buildProfileLine(symbol, rangeValue string, start, end, step int64, noLock bool,
+func buildProfileLine(symbol, rangeValue string, start, end, step int64,
 	opening decimal.Decimal, events, extras []profileLineEvent, epochs []profileLineEpoch,
 ) *types.ProfileLineResp {
 	resp := &types.ProfileLineResp{
@@ -57,10 +57,7 @@ func buildProfileLine(symbol, rangeValue string, start, end, step int64, noLock 
 		base, extra, deposited, principalSeconds := decimal.Zero, decimal.Zero, decimal.Zero, decimal.Zero
 		complete := true
 		for _, epoch := range epochs {
-			earningStart := epoch.LockupStart
-			if noLock {
-				earningStart = epoch.OperateStart
-			}
+			earningStart := epoch.OperateStart
 			earningEnd := epoch.LockupStart + epoch.LockupPeriod
 			left, right := max(bucketStart, earningStart), min(bucketEnd, earningEnd)
 			if left >= right {
@@ -77,18 +74,8 @@ func buildProfileLine(symbol, rangeValue string, start, end, step int64, noLock 
 				}
 				base = base.Add(allocation(right).Sub(allocation(left)))
 			}
-			if !noLock {
-				// Locked strategies calculate their eligible shares from transactions
-				// strictly before lockup_start; deposits during lockup are queued.
-				balance := profileLineBalanceBefore(opening, events, epoch.LockupStart)
-				if balance.IsPositive() {
-					principalSeconds = principalSeconds.Add(balance.Mul(decimal.NewFromInt(right - left)))
-				}
-			}
 		}
-		if noLock {
-			principalSeconds = profileLinePrincipalSeconds(opening, events, bucketStart, bucketEnd)
-		}
+		principalSeconds = profileLinePrincipalSeconds(opening, events, bucketStart, bucketEnd)
 		for _, event := range events {
 			if event.Timestamp >= bucketStart && event.Timestamp < bucketEnd {
 				deposited = deposited.Add(event.Deposited)

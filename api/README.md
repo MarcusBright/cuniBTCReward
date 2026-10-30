@@ -8,6 +8,9 @@ goctl api swagger -api cuniBTCReward.api -dir docs
 
 `POST /api/v1/profileline`
 
+Only noLock strategies are supported, currently `b2uniBTC`, matching the
+distribution interface. Other symbols return a validation error before database access.
+
 ```json
 {"symbol":"b2uniBTC","range":"7D"}
 ```
@@ -27,17 +30,15 @@ Each bucket contains:
 
 - `startTime`, `endTime`: inclusive/exclusive Unix seconds.
 - `amountBase`: estimated base rewards, allocated from generated airdrop records
-  in proportion to overlap with the earning period. Locked strategies earn over
-  `[lockup_start, lockup_start + lockup_period)`; `b2uniBTC` earns over
-  `[operate_start, lockup_start + lockup_period)`, matching distribution.
+  in proportion to overlap with the earning period
+  `[operate_start, lockup_start + lockup_period)`, matching noLock distribution.
 - `amountExtra`: original `extra_reward_dis` amounts by their accrual timestamps.
   Persisted `air_drop_records.amount_extra` is never added again.
 - `rewards`: `amountBase + amountExtra`.
 - `deposited`: new deposits within this bucket.
 - `effectivePrincipal`: eligible principal weighted by seconds of participation.
-  `b2uniBTC` uses the running signed balance across the vault and redeem router.
-  Locked strategies use their balance strictly before `lockup_start` during the
-  lockup period, excluding queued deposits, matching distribution's share rule.
+  Uses the running signed balance across the vault and redeem router throughout
+  the bucket, without locking or queued-deposit exclusions.
 - `apy`: compound annualized return,
   `(1 + rewards / effectivePrincipal)^(31536000 / bucketSeconds) - 1`.
   `0.05` means 5%. Returns `null` for zero principal or a result outside finite
